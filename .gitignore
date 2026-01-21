@@ -12,3 +12,6 @@
 .terraform.lock.hcl
 crash.log
 crash.*.log
+
+# allow env template
+!.env.example
