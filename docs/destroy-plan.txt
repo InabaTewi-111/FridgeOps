@@ -1,0 +1,310 @@
+random_id.bucket_suffix: Refreshing state... [id=MYk7Ag]
+aws_cloudfront_origin_access_control.static: Refreshing state... [id=E1U3SC8KH0NUQK]
+aws_s3_bucket.static: Refreshing state... [id=fridgeops-dev-static-31893b02]
+aws_s3_bucket_versioning.static: Refreshing state... [id=fridgeops-dev-static-31893b02]
+aws_s3_bucket_server_side_encryption_configuration.static: Refreshing state... [id=fridgeops-dev-static-31893b02]
+aws_s3_bucket_public_access_block.static: Refreshing state... [id=fridgeops-dev-static-31893b02]
+aws_s3_object.index_html: Refreshing state... [id=index.html]
+aws_s3_bucket_ownership_controls.static: Refreshing state... [id=fridgeops-dev-static-31893b02]
+aws_cloudfront_distribution.static: Refreshing state... [id=E3E33M72V62QBA]
+aws_s3_bucket_policy.static: Refreshing state... [id=fridgeops-dev-static-31893b02]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+  # aws_cloudfront_distribution.static will be destroyed
+  - resource "aws_cloudfront_distribution" "static" {
+      - aliases                        = [] -> null
+      - arn                            = "arn:aws:cloudfront::529928146765:distribution/E3E33M72V62QBA" -> null
+      - caller_reference               = "terraform-20260126021627281200000001" -> null
+      - default_root_object            = "index.html" -> null
+      - domain_name                    = "d2u1xk5k8ylmsn.cloudfront.net" -> null
+      - enabled                        = true -> null
+      - etag                           = "E3IR9AF2BDZRLL" -> null
+      - hosted_zone_id                 = "Z2FDTNDATAQYW2" -> null
+      - http_version                   = "http2" -> null
+      - id                             = "E3E33M72V62QBA" -> null
+      - in_progress_validation_batches = 0 -> null
+      - is_ipv6_enabled                = false -> null
+      - last_modified_time             = "2026-01-26 02:33:36.717 +0000 UTC" -> null
+      - price_class                    = "PriceClass_200" -> null
+      - retain_on_delete               = false -> null
+      - staging                        = false -> null
+      - status                         = "Deployed" -> null
+      - tags                           = {} -> null
+      - tags_all                       = {} -> null
+      - trusted_key_groups             = [
+          - {
+              - enabled = false
+              - items   = []
+            },
+        ] -> null
+      - trusted_signers                = [
+          - {
+              - enabled = false
+              - items   = []
+            },
+        ] -> null
+      - wait_for_deployment            = true -> null
+
+      - default_cache_behavior {
+          - allowed_methods        = [
+              - "GET",
+              - "HEAD",
+            ] -> null
+          - cached_methods         = [
+              - "GET",
+              - "HEAD",
+            ] -> null
+          - compress               = true -> null
+          - default_ttl            = 0 -> null
+          - max_ttl                = 0 -> null
+          - min_ttl                = 0 -> null
+          - smooth_streaming       = false -> null
+          - target_origin_id       = "s3-static" -> null
+          - trusted_key_groups     = [] -> null
+          - trusted_signers        = [] -> null
+          - viewer_protocol_policy = "redirect-to-https" -> null
+
+          - forwarded_values {
+              - headers                 = [] -> null
+              - query_string            = false -> null
+              - query_string_cache_keys = [] -> null
+
+              - cookies {
+                  - forward           = "none" -> null
+                  - whitelisted_names = [] -> null
+                }
+            }
+
+          - grpc_config {
+              - enabled = false -> null
+            }
+        }
+
+      - origin {
+          - connection_attempts      = 3 -> null
+          - connection_timeout       = 10 -> null
+          - domain_name              = "fridgeops-dev-static-31893b02.s3.ap-northeast-1.amazonaws.com" -> null
+          - origin_access_control_id = "E1U3SC8KH0NUQK" -> null
+          - origin_id                = "s3-static" -> null
+        }
+
+      - restrictions {
+          - geo_restriction {
+              - locations        = [] -> null
+              - restriction_type = "none" -> null
+            }
+        }
+
+      - viewer_certificate {
+          - cloudfront_default_certificate = true -> null
+          - minimum_protocol_version       = "TLSv1" -> null
+        }
+    }
+
+  # aws_cloudfront_origin_access_control.static will be destroyed
+  - resource "aws_cloudfront_origin_access_control" "static" {
+      - arn                               = "arn:aws:cloudfront::529928146765:origin-access-control/E1U3SC8KH0NUQK" -> null
+      - description                       = "OAC for private S3 static bucket" -> null
+      - etag                              = "ETVPDKIKX0DER" -> null
+      - id                                = "E1U3SC8KH0NUQK" -> null
+      - name                              = "fridgeops-dev-static-oac" -> null
+      - origin_access_control_origin_type = "s3" -> null
+      - signing_behavior                  = "always" -> null
+      - signing_protocol                  = "sigv4" -> null
+    }
+
+  # aws_s3_bucket.static will be destroyed
+  - resource "aws_s3_bucket" "static" {
+      - arn                         = "arn:aws:s3:::fridgeops-dev-static-31893b02" -> null
+      - bucket                      = "fridgeops-dev-static-31893b02" -> null
+      - bucket_domain_name          = "fridgeops-dev-static-31893b02.s3.amazonaws.com" -> null
+      - bucket_regional_domain_name = "fridgeops-dev-static-31893b02.s3.ap-northeast-1.amazonaws.com" -> null
+      - force_destroy               = false -> null
+      - hosted_zone_id              = "Z2M4EHUR26P7ZW" -> null
+      - id                          = "fridgeops-dev-static-31893b02" -> null
+      - object_lock_enabled         = false -> null
+      - policy                      = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action    = "s3:GetObject"
+                      - Condition = {
+                          - StringEquals = {
+                              - "AWS:SourceArn" = "arn:aws:cloudfront::529928146765:distribution/E3E33M72V62QBA"
+                            }
+                        }
+                      - Effect    = "Allow"
+                      - Principal = {
+                          - Service = "cloudfront.amazonaws.com"
+                        }
+                      - Resource  = "arn:aws:s3:::fridgeops-dev-static-31893b02/*"
+                      - Sid       = "AllowCloudFrontRead"
+                    },
+                ]
+              - Version   = "2012-10-17"
+            }
+        ) -> null
+      - region                      = "ap-northeast-1" -> null
+      - request_payer               = "BucketOwner" -> null
+      - tags                        = {
+          - "Env"     = "dev"
+          - "Project" = "fridgeops"
+        } -> null
+      - tags_all                    = {
+          - "Env"     = "dev"
+          - "Project" = "fridgeops"
+        } -> null
+
+      - grant {
+          - id          = "52e94327557e5b2cdb11b4fac4ebda0b0fcbb6758bbc051c8bda7d059c33adce" -> null
+          - permissions = [
+              - "FULL_CONTROL",
+            ] -> null
+          - type        = "CanonicalUser" -> null
+        }
+
+      - server_side_encryption_configuration {
+          - rule {
+              - bucket_key_enabled = false -> null
+
+              - apply_server_side_encryption_by_default {
+                  - sse_algorithm = "AES256" -> null
+                }
+            }
+        }
+
+      - versioning {
+          - enabled    = true -> null
+          - mfa_delete = false -> null
+        }
+    }
+
+  # aws_s3_bucket_ownership_controls.static will be destroyed
+  - resource "aws_s3_bucket_ownership_controls" "static" {
+      - bucket = "fridgeops-dev-static-31893b02" -> null
+      - id     = "fridgeops-dev-static-31893b02" -> null
+
+      - rule {
+          - object_ownership = "BucketOwnerEnforced" -> null
+        }
+    }
+
+  # aws_s3_bucket_policy.static will be destroyed
+  - resource "aws_s3_bucket_policy" "static" {
+      - bucket = "fridgeops-dev-static-31893b02" -> null
+      - id     = "fridgeops-dev-static-31893b02" -> null
+      - policy = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action    = "s3:GetObject"
+                      - Condition = {
+                          - StringEquals = {
+                              - "AWS:SourceArn" = "arn:aws:cloudfront::529928146765:distribution/E3E33M72V62QBA"
+                            }
+                        }
+                      - Effect    = "Allow"
+                      - Principal = {
+                          - Service = "cloudfront.amazonaws.com"
+                        }
+                      - Resource  = "arn:aws:s3:::fridgeops-dev-static-31893b02/*"
+                      - Sid       = "AllowCloudFrontRead"
+                    },
+                ]
+              - Version   = "2012-10-17"
+            }
+        ) -> null
+    }
+
+  # aws_s3_bucket_public_access_block.static will be destroyed
+  - resource "aws_s3_bucket_public_access_block" "static" {
+      - block_public_acls       = true -> null
+      - block_public_policy     = true -> null
+      - bucket                  = "fridgeops-dev-static-31893b02" -> null
+      - id                      = "fridgeops-dev-static-31893b02" -> null
+      - ignore_public_acls      = true -> null
+      - restrict_public_buckets = true -> null
+    }
+
+  # aws_s3_bucket_server_side_encryption_configuration.static will be destroyed
+  - resource "aws_s3_bucket_server_side_encryption_configuration" "static" {
+      - bucket = "fridgeops-dev-static-31893b02" -> null
+      - id     = "fridgeops-dev-static-31893b02" -> null
+
+      - rule {
+          - bucket_key_enabled = false -> null
+
+          - apply_server_side_encryption_by_default {
+              - sse_algorithm = "AES256" -> null
+            }
+        }
+    }
+
+  # aws_s3_bucket_versioning.static will be destroyed
+  - resource "aws_s3_bucket_versioning" "static" {
+      - bucket = "fridgeops-dev-static-31893b02" -> null
+      - id     = "fridgeops-dev-static-31893b02" -> null
+
+      - versioning_configuration {
+          - status = "Enabled" -> null
+        }
+    }
+
+  # aws_s3_object.index_html will be destroyed
+  - resource "aws_s3_object" "index_html" {
+      - arn                    = "arn:aws:s3:::fridgeops-dev-static-31893b02/index.html" -> null
+      - bucket                 = "fridgeops-dev-static-31893b02" -> null
+      - bucket_key_enabled     = false -> null
+      - content                = <<-EOT
+            <!doctype html>
+            <html lang="zh-CN">
+            <head>
+              <meta charset="utf-8" />
+              <meta name="viewport" content="width=device-width,initial-scale=1" />
+              <title>FridgeOps Static</title>
+            </head>
+            <body>
+              <h1>FridgeOps Static OK</h1>
+              <p>If you see this via CloudFront, OAC + bucket policy is working.</p>
+            </body>
+            </html>
+        EOT -> null
+      - content_type           = "text/html; charset=utf-8" -> null
+      - etag                   = "ce8da601debc6639a6530d8c046d353a" -> null
+      - force_destroy          = false -> null
+      - id                     = "index.html" -> null
+      - key                    = "index.html" -> null
+      - metadata               = {} -> null
+      - server_side_encryption = "AES256" -> null
+      - storage_class          = "STANDARD" -> null
+      - tags                   = {} -> null
+      - tags_all               = {} -> null
+      - version_id             = "W8j3m.Q3Kx4w1d6yqvJWziyHXSuvOnRw" -> null
+    }
+
+  # random_id.bucket_suffix will be destroyed
+  - resource "random_id" "bucket_suffix" {
+      - b64_std     = "MYk7Ag==" -> null
+      - b64_url     = "MYk7Ag" -> null
+      - byte_length = 4 -> null
+      - dec         = "831077122" -> null
+      - hex         = "31893b02" -> null
+      - id          = "MYk7Ag" -> null
+    }
+
+Plan: 0 to add, 0 to change, 10 to destroy.
+
+Changes to Outputs:
+  - cloudfront_distribution_id = "E3E33M72V62QBA" -> null
+  - cloudfront_domain_name     = "d2u1xk5k8ylmsn.cloudfront.net" -> null
+  - static_bucket_name         = "fridgeops-dev-static-31893b02" -> null
+
+─────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't
+guarantee to take exactly these actions if you run "terraform apply" now.
