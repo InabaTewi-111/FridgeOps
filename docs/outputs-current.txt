@@ -1,0 +1,5 @@
+FridgeOps current outputs (infra/main)
+
+cloudfront_distribution_id = E3E33M72V62QBA
+cloudfront_domain_name     = d2u1xk5k8ylmsn.cloudfront.net
+static_bucket_name         = fridgeops-dev-static-31893b02
