@@ -1,0 +1,8 @@
+HTTP/1.1 403 Forbidden
+x-amz-request-id: MMP117ZNTMD3ZQN8
+x-amz-id-2: JmEA9/ueA39Nvo6WpCZTjE41tgSBdQTFjYdtpWyARi8lOIGCoGxydnWw+bbUOW2K3IxeUROjTgo=
+Content-Type: application/xml
+Transfer-Encoding: chunked
+Date: Tue, 27 Jan 2026 07:29:51 GMT
+Server: AmazonS3
+

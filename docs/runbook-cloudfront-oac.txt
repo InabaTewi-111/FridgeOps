@@ -1,0 +1,6 @@
+CloudFront 手动创建跑通（Console 真值）
+- Distribution ID: EGTMN94OGXNUL
+- Distribution domain: d197lbc65r19tj.cloudfront.net
+- S3 bucket: fridgeops-dev-static-manual-9f13a2c7
+- Default root object: index.html
+- OAC ID: EOE8W09ARCMSQ   (注意：第2位是字母 O，不是数字 0)

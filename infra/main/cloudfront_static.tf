@@ -25,9 +25,9 @@ resource "aws_cloudfront_distribution" "static" {
     target_origin_id       = "s3-static"
     viewer_protocol_policy = "redirect-to-https"
 
-    allowed_methods  = ["GET", "HEAD"]
-    cached_methods   = ["GET", "HEAD"]
-    compress         = true
+    allowed_methods = ["GET", "HEAD"]
+    cached_methods  = ["GET", "HEAD"]
+    compress        = true
 
     forwarded_values {
       query_string = false
@@ -46,4 +46,9 @@ resource "aws_cloudfront_distribution" "static" {
   viewer_certificate {
     cloudfront_default_certificate = true
   }
+
+  lifecycle {
+  ignore_changes = [origin]
+  }
 }
+

@@ -1,0 +1,338 @@
+# data.aws_iam_policy_document.static_bucket_policy:
+data "aws_iam_policy_document" "static_bucket_policy" {
+    id            = "3104688014"
+    json          = jsonencode(
+        {
+            Statement = [
+                {
+                    Action    = "s3:GetObject"
+                    Condition = {
+                        StringEquals = {
+                            "AWS:SourceArn" = "arn:aws:cloudfront::529928146765:distribution/E10IWXBS2YJ41P"
+                        }
+                    }
+                    Effect    = "Allow"
+                    Principal = {
+                        Service = "cloudfront.amazonaws.com"
+                    }
+                    Resource  = "arn:aws:s3:::fridgeops-dev-static-ecd4c6c9/*"
+                    Sid       = "AllowCloudFrontRead"
+                },
+            ]
+            Version   = "2012-10-17"
+        }
+    )
+    minified_json = jsonencode(
+        {
+            Statement = [
+                {
+                    Action    = "s3:GetObject"
+                    Condition = {
+                        StringEquals = {
+                            "AWS:SourceArn" = "arn:aws:cloudfront::529928146765:distribution/E10IWXBS2YJ41P"
+                        }
+                    }
+                    Effect    = "Allow"
+                    Principal = {
+                        Service = "cloudfront.amazonaws.com"
+                    }
+                    Resource  = "arn:aws:s3:::fridgeops-dev-static-ecd4c6c9/*"
+                    Sid       = "AllowCloudFrontRead"
+                },
+            ]
+            Version   = "2012-10-17"
+        }
+    )
+    version       = "2012-10-17"
+
+    statement {
+        actions       = [
+            "s3:GetObject",
+        ]
+        effect        = "Allow"
+        not_actions   = []
+        not_resources = []
+        resources     = [
+            "arn:aws:s3:::fridgeops-dev-static-ecd4c6c9/*",
+        ]
+        sid           = "AllowCloudFrontRead"
+
+        condition {
+            test     = "StringEquals"
+            values   = [
+                "arn:aws:cloudfront::529928146765:distribution/E10IWXBS2YJ41P",
+            ]
+            variable = "AWS:SourceArn"
+        }
+
+        principals {
+            identifiers = [
+                "cloudfront.amazonaws.com",
+            ]
+            type        = "Service"
+        }
+    }
+}
+
+# aws_cloudfront_distribution.static:
+resource "aws_cloudfront_distribution" "static" {
+    arn                            = "arn:aws:cloudfront::529928146765:distribution/E10IWXBS2YJ41P"
+    caller_reference               = "terraform-20260126074316997300000001"
+    default_root_object            = "index.html"
+    domain_name                    = "d2l38kg3cs4adr.cloudfront.net"
+    enabled                        = true
+    etag                           = "EHBJ8GCLTUSLS"
+    hosted_zone_id                 = "Z2FDTNDATAQYW2"
+    http_version                   = "http2"
+    id                             = "E10IWXBS2YJ41P"
+    in_progress_validation_batches = 0
+    is_ipv6_enabled                = false
+    last_modified_time             = "2026-01-26 07:43:17.343 +0000 UTC"
+    price_class                    = "PriceClass_200"
+    retain_on_delete               = false
+    staging                        = false
+    status                         = "Deployed"
+    tags_all                       = {}
+    trusted_key_groups             = [
+        {
+            enabled = false
+            items   = []
+        },
+    ]
+    trusted_signers                = [
+        {
+            enabled = false
+            items   = []
+        },
+    ]
+    wait_for_deployment            = true
+
+    default_cache_behavior {
+        allowed_methods        = [
+            "GET",
+            "HEAD",
+        ]
+        cached_methods         = [
+            "GET",
+            "HEAD",
+        ]
+        compress               = true
+        default_ttl            = 0
+        max_ttl                = 0
+        min_ttl                = 0
+        smooth_streaming       = false
+        target_origin_id       = "s3-static"
+        trusted_key_groups     = []
+        trusted_signers        = []
+        viewer_protocol_policy = "redirect-to-https"
+
+        forwarded_values {
+            headers                 = []
+            query_string            = false
+            query_string_cache_keys = []
+
+            cookies {
+                forward           = "none"
+                whitelisted_names = []
+            }
+        }
+
+        grpc_config {
+            enabled = false
+        }
+    }
+
+    origin {
+        connection_attempts      = 3
+        connection_timeout       = 10
+        domain_name              = "fridgeops-dev-static-ecd4c6c9.s3.ap-northeast-1.amazonaws.com"
+        origin_access_control_id = "E3FIA264SS50B8"
+        origin_id                = "s3-static"
+
+        s3_origin_config {}
+    }
+
+    restrictions {
+        geo_restriction {
+            locations        = []
+            restriction_type = "none"
+        }
+    }
+
+    viewer_certificate {
+        cloudfront_default_certificate = true
+        minimum_protocol_version       = "TLSv1"
+    }
+}
+
+# aws_cloudfront_origin_access_control.static:
+resource "aws_cloudfront_origin_access_control" "static" {
+    arn                               = "arn:aws:cloudfront::529928146765:origin-access-control/E3FIA264SS50B8"
+    description                       = "OAC for private S3 static bucket"
+    etag                              = "ETVPDKIKX0DER"
+    id                                = "E3FIA264SS50B8"
+    name                              = "fridgeops-dev-static-oac"
+    origin_access_control_origin_type = "s3"
+    signing_behavior                  = "always"
+    signing_protocol                  = "sigv4"
+}
+
+# aws_s3_bucket.static:
+resource "aws_s3_bucket" "static" {
+    arn                         = "arn:aws:s3:::fridgeops-dev-static-ecd4c6c9"
+    bucket                      = "fridgeops-dev-static-ecd4c6c9"
+    bucket_domain_name          = "fridgeops-dev-static-ecd4c6c9.s3.amazonaws.com"
+    bucket_regional_domain_name = "fridgeops-dev-static-ecd4c6c9.s3.ap-northeast-1.amazonaws.com"
+    force_destroy               = false
+    hosted_zone_id              = "Z2M4EHUR26P7ZW"
+    id                          = "fridgeops-dev-static-ecd4c6c9"
+    object_lock_enabled         = false
+    region                      = "ap-northeast-1"
+    request_payer               = "BucketOwner"
+    tags                        = {
+        "Env"     = "dev"
+        "Project" = "fridgeops"
+    }
+    tags_all                    = {
+        "Env"     = "dev"
+        "Project" = "fridgeops"
+    }
+
+    grant {
+        id          = "52e94327557e5b2cdb11b4fac4ebda0b0fcbb6758bbc051c8bda7d059c33adce"
+        permissions = [
+            "FULL_CONTROL",
+        ]
+        type        = "CanonicalUser"
+    }
+
+    server_side_encryption_configuration {
+        rule {
+            bucket_key_enabled = false
+
+            apply_server_side_encryption_by_default {
+                sse_algorithm = "AES256"
+            }
+        }
+    }
+
+    versioning {
+        enabled    = false
+        mfa_delete = false
+    }
+}
+
+# aws_s3_bucket_ownership_controls.static:
+resource "aws_s3_bucket_ownership_controls" "static" {
+    bucket = "fridgeops-dev-static-ecd4c6c9"
+    id     = "fridgeops-dev-static-ecd4c6c9"
+
+    rule {
+        object_ownership = "BucketOwnerEnforced"
+    }
+}
+
+# aws_s3_bucket_policy.static:
+resource "aws_s3_bucket_policy" "static" {
+    bucket = "fridgeops-dev-static-ecd4c6c9"
+    id     = "fridgeops-dev-static-ecd4c6c9"
+    policy = jsonencode(
+        {
+            Statement = [
+                {
+                    Action    = "s3:GetObject"
+                    Condition = {
+                        StringEquals = {
+                            "AWS:SourceArn" = "arn:aws:cloudfront::529928146765:distribution/E10IWXBS2YJ41P"
+                        }
+                    }
+                    Effect    = "Allow"
+                    Principal = {
+                        Service = "cloudfront.amazonaws.com"
+                    }
+                    Resource  = "arn:aws:s3:::fridgeops-dev-static-ecd4c6c9/*"
+                    Sid       = "AllowCloudFrontRead"
+                },
+            ]
+            Version   = "2012-10-17"
+        }
+    )
+}
+
+# aws_s3_bucket_public_access_block.static:
+resource "aws_s3_bucket_public_access_block" "static" {
+    block_public_acls       = true
+    block_public_policy     = true
+    bucket                  = "fridgeops-dev-static-ecd4c6c9"
+    id                      = "fridgeops-dev-static-ecd4c6c9"
+    ignore_public_acls      = true
+    restrict_public_buckets = true
+}
+
+# aws_s3_bucket_server_side_encryption_configuration.static:
+resource "aws_s3_bucket_server_side_encryption_configuration" "static" {
+    bucket = "fridgeops-dev-static-ecd4c6c9"
+    id     = "fridgeops-dev-static-ecd4c6c9"
+
+    rule {
+        apply_server_side_encryption_by_default {
+            sse_algorithm = "AES256"
+        }
+    }
+}
+
+# aws_s3_bucket_versioning.static:
+resource "aws_s3_bucket_versioning" "static" {
+    bucket = "fridgeops-dev-static-ecd4c6c9"
+    id     = "fridgeops-dev-static-ecd4c6c9"
+
+    versioning_configuration {
+        status = "Enabled"
+    }
+}
+
+# aws_s3_object.index_html:
+resource "aws_s3_object" "index_html" {
+    arn                    = "arn:aws:s3:::fridgeops-dev-static-ecd4c6c9/index.html"
+    bucket                 = "fridgeops-dev-static-ecd4c6c9"
+    bucket_key_enabled     = false
+    content                = <<-EOT
+        <!doctype html>
+        <html lang="zh-CN">
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width,initial-scale=1" />
+          <title>FridgeOps Static</title>
+        </head>
+        <body>
+          <h1>FridgeOps Static OK</h1>
+          <p>If you see this via CloudFront, OAC + bucket policy is working.</p>
+        </body>
+        </html>
+    EOT
+    content_type           = "text/html; charset=utf-8"
+    etag                   = "ce8da601debc6639a6530d8c046d353a"
+    force_destroy          = false
+    id                     = "index.html"
+    key                    = "index.html"
+    server_side_encryption = "AES256"
+    storage_class          = "STANDARD"
+    tags_all               = {}
+}
+
+# random_id.bucket_suffix:
+resource "random_id" "bucket_suffix" {
+    b64_std     = "7NTGyQ=="
+    b64_url     = "7NTGyQ"
+    byte_length = 4
+    dec         = "3973367497"
+    hex         = "ecd4c6c9"
+    id          = "7NTGyQ"
+}
+
+
+Outputs:
+
+cloudfront_distribution_id = "E10IWXBS2YJ41P"
+cloudfront_domain_name = "d2l38kg3cs4adr.cloudfront.net"
+static_bucket_name = "fridgeops-dev-static-ecd4c6c9"
