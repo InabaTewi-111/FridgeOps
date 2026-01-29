@@ -24,3 +24,5 @@
 ### Day7（途中）: CI（OIDC）進捗
 - Created: aws_iam_openid_connect_provider.github_actions
 - Output: github_oidc_provider_arn = arn:aws:iam::529928146765:oidc-provider/token.actions.githubusercontent.com
+- Created: aws_iam_role.tf_plan（fridgeops-ci-tf-plan）
+- Output: tf_plan_role_arn = arn:aws:iam::529928146765:role/fridgeops-ci-tf-plan
