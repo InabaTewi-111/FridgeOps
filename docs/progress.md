@@ -152,4 +152,13 @@
   - actions: dynamodb:GetItem, dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:Query, dynamodb:Scan
   - resource: arn:aws:dynamodb:ap-northeast-1:529928146765:table/fridgeops-dev-items
   - tf: infra/main/iam_lambda_items_policy.tf
+  - role:
+    - aws_iam_role.lambda_items: created
+  - role_name: fridgeops-dev-lambda-items-role
+  - role_arn: arn:aws:iam::529928146765:role/fridgeops-dev-lambda-items-role
+  - attachments:
+    - aws_iam_role_policy_attachment.lambda_items_basic: AWSLambdaBasicExecutionRole
+    - aws_iam_role_policy_attachment.lambda_items_rw: fridgeops-dev-lambda-items-rw
+  -- output: lambda_items_role_arn: arn:aws:iam::529928146765:role/fridgeops-dev-lambda-items-role
+  - tf: infra/main/iam_lambda_items_role.tf
 
