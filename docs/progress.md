@@ -71,3 +71,34 @@
 - DynamoDB（items テーブル）＋ Lambda（list/add）実装に着手
 - Contract v1（GET/POST /api/items）前提でハンドラ作成
 
+
+## 2026-02-05 Day10 (infra/main)
+- Apply: Resources: 11 added, 0 changed, 0 destroyed
+- Outputs:
+  - cloudfront_distribution_id: E2GH725XIVJDDY
+  - cloudfront_domain_name: d3nzcmll7ylltp.cloudfront.net
+  - static_bucket_name: fridgeops-dev-static-31be4264
+
+### Resources (Terraform addresses)
+- data.aws_caller_identity.current
+- data.aws_iam_policy_document.static_bucket_policy
+- aws_cloudfront_distribution.static
+- aws_cloudfront_origin_access_control.static
+- aws_dynamodb_table.items
+- aws_s3_bucket.static
+- aws_s3_bucket_ownership_controls.static
+- aws_s3_bucket_policy.static
+- aws_s3_bucket_public_access_block.static
+- aws_s3_bucket_server_side_encryption_configuration.static
+- aws_s3_bucket_versioning.static
+- aws_s3_object.index_html
+- random_id.bucket_suffix
+
+### DynamoDB items table
+- address: aws_dynamodb_table.items
+- name: fridgeops-dev-items
+- arn: arn:aws:dynamodb:ap-northeast-1:529928146765:table/fridgeops-dev-items
+- billing: PAY_PER_REQUEST
+- key: id (S)
+- sse: enabled
+- ttl: expiresAt (enabled)
