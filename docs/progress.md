@@ -161,4 +161,37 @@
     - aws_iam_role_policy_attachment.lambda_items_rw: fridgeops-dev-lambda-items-rw
   -- output: lambda_items_role_arn: arn:aws:iam::529928146765:role/fridgeops-dev-lambda-items-role
   - tf: infra/main/iam_lambda_items_role.tf
+## Day11
+
+### 検証/証跡 (docs/verify-*.txt)
+- docs/verify-lambda-items-invoke.txt: lambda invokeで items の list/add を確認（GET empty -> POST add -> GET list）
+
+### メモ（確認コマンド）
+- init/validate:
+  - terraform -chdir=infra/main init
+  - terraform -chdir=infra/main validate
+- plan（差分確認）:
+  - terraform -chdir=infra/main plan -no-color | grep '^  # '
+- lambda 動作確認（AWS CLI）:
+  - aws lambda invoke --cli-binary-format raw-in-base64-out --function-name fridgeops-dev-items --payload '{"version":"2.0","rawPath":"/items","requestContext":{"http":{"method":"GET"}}}' /tmp/invoke_get.json && cat /tmp/invoke_get.json
+  - aws lambda invoke --cli-binary-format raw-in-base64-out --function-name fridgeops-dev-items --payload '{"version":"2.0","rawPath":"/items","requestContext":{"http":{"method":"POST"}},"headers":{"content-type":"application/json"},"body":"{\"name\":\"egg\",\"quantity\":2,\"unit\":\"pcs\"}"}' /tmp/invoke_post.json && cat /tmp/invoke_post.json
+
+### 変更内容（実装）
+- workload:
+  - workload/lambda/items/handler.py: items API（GET /items, POST /items）実装
+  - workload/lambda/items/requirements.txt: （現状なし）
+- infra:
+  - infra/main/s3_static_bucket.tf: required_providers に archive を追加
+  - infra/main/lambda_items.tf: archive_fileでzip作成 → aws_lambda_function.items を作成
+  - infra/main/outputs.tf: 既存（lambda_items_role_arn 等）
+  - .terraform.lock.hcl: provider更新（initにより更新）
+
+### 作成/更新したリソース（Terraform address / 実体）
+- aws_lambda_function.items: created
+  - function_name: fridgeops-dev-items
+  - runtime: python3.11
+  - handler: handler.handler
+  - role: arn:aws:iam::529928146765:role/fridgeops-dev-lambda-items-role
+  - env: ITEMS_TABLE_NAME=fridgeops-dev-items
+  - tf: infra/main/lambda_items.tf
 

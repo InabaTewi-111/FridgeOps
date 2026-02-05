@@ -8,6 +8,10 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.0"
     }
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.0"
+    }
   }
 }
 
@@ -60,4 +64,3 @@ resource "aws_s3_bucket_ownership_controls" "static" {
     object_ownership = "BucketOwnerEnforced"
   }
 }
-
