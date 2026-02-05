@@ -55,3 +55,19 @@
 - 6cda34f: Fix: set default github_repo for CI non-interactive plan
 - d63a681: chore: terraform fmt for infra/main
 
+## Day9
+### 今日の目的
+- API の型を決める（REST API を採用）
+- MVP の API Contract を固定して後工程のブレを止める
+
+### 今日の成果
+- ADR を追加：docs/adr/ADR-0001.md（REST 採用 + Contract 固定）
+
+### 変更（ファイル/コミット）
+- New: docs/adr/ADR-0001.md
+- Commit: 98080e6 (docs(adr): decide REST API and freeze MVP contract)
+
+### 次にやること（Day10 へ）
+- DynamoDB（items テーブル）＋ Lambda（list/add）実装に着手
+- Contract v1（GET/POST /api/items）前提でハンドラ作成
+
