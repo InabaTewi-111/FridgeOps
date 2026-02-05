@@ -1,0 +1,26 @@
+resource "aws_iam_role" "lambda_items" {
+  name = "${local.project}-${local.env}-lambda-items-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_items_basic" {
+  role       = aws_iam_role.lambda_items.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_items_rw" {
+  role       = aws_iam_role.lambda_items.name
+  policy_arn = aws_iam_policy.lambda_items_rw.arn
+}
