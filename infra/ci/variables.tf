@@ -1,6 +1,7 @@
 variable "github_repo" {
   description = "GitHub repository in OWNER/REPO format"
   type        = string
+  default     = "InabaTewi-111/FridgeOps"
 }
 
 variable "github_ref" {
