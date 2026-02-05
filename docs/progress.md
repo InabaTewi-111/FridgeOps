@@ -144,4 +144,12 @@
   - terraform -chdir=infra/main output
 - outputs 追加:
   - items_table_name: fridgeops-dev-items
+- iam:
+  - policy:
+    - aws_iam_policy.lambda_items_rw: created
+  - name: fridgeops-dev-lambda-items-rw
+  - arn: arn:aws:iam::529928146765:policy/fridgeops-dev-lambda-items-rw
+  - actions: dynamodb:GetItem, dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:Query, dynamodb:Scan
+  - resource: arn:aws:dynamodb:ap-northeast-1:529928146765:table/fridgeops-dev-items
+  - tf: infra/main/iam_lambda_items_policy.tf
 
