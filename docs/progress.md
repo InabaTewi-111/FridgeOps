@@ -194,4 +194,7 @@
   - role: arn:aws:iam::529928146765:role/fridgeops-dev-lambda-items-role
   - env: ITEMS_TABLE_NAME=fridgeops-dev-items
   - tf: infra/main/lambda_items.tf
+  - outputs:
+  - infra/main/outputs.tf: items_lambda_function_name / items_lambda_function_arn を追加
+
 
