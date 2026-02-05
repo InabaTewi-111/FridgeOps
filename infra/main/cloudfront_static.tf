@@ -48,7 +48,7 @@ resource "aws_cloudfront_distribution" "static" {
   }
 
   lifecycle {
-  ignore_changes = [origin]
+    ignore_changes = [origin]
   }
 }
 
