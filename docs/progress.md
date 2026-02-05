@@ -172,7 +172,7 @@
   - terraform -chdir=infra/main validate
 - plan（差分確認）:
   - terraform -chdir=infra/main plan -no-color | grep '^  # '
-- lambda 動作確認（AWS CLI）:
+- lambda 動作確認（AWS CLI / HTTP API v2 形式、raw payload 指定）:
   - aws lambda invoke --cli-binary-format raw-in-base64-out --function-name fridgeops-dev-items --payload '{"version":"2.0","rawPath":"/items","requestContext":{"http":{"method":"GET"}}}' /tmp/invoke_get.json && cat /tmp/invoke_get.json
   - aws lambda invoke --cli-binary-format raw-in-base64-out --function-name fridgeops-dev-items --payload '{"version":"2.0","rawPath":"/items","requestContext":{"http":{"method":"POST"}},"headers":{"content-type":"application/json"},"body":"{\"name\":\"egg\",\"quantity\":2,\"unit\":\"pcs\"}"}' /tmp/invoke_post.json && cat /tmp/invoke_post.json
 
@@ -183,18 +183,55 @@
 - infra:
   - infra/main/s3_static_bucket.tf: required_providers に archive を追加
   - infra/main/lambda_items.tf: archive_fileでzip作成 → aws_lambda_function.items を作成
-  - infra/main/outputs.tf: 既存（lambda_items_role_arn 等）
-  - .terraform.lock.hcl: provider更新（initにより更新）
+  - infra/main/outputs.tf: items_lambda_function_name / items_lambda_function_arn を追加
+  - infra/main/.terraform.lock.hcl: provider更新（terraform init により archive 追加）
 
 ### 作成/更新したリソース（Terraform address / 実体）
 - aws_lambda_function.items: created
   - function_name: fridgeops-dev-items
+  - arn: arn:aws:lambda:ap-northeast-1:529928146765:function:fridgeops-dev-items
   - runtime: python3.11
   - handler: handler.handler
   - role: arn:aws:iam::529928146765:role/fridgeops-dev-lambda-items-role
   - env: ITEMS_TABLE_NAME=fridgeops-dev-items
   - tf: infra/main/lambda_items.tf
-  - outputs:
-  - infra/main/outputs.tf: items_lambda_function_name / items_lambda_function_arn を追加
+- iam:
+  - aws_iam_policy.lambda_items_rw: arn:aws:iam::529928146765:policy/fridgeops-dev-lambda-items-rw
+  - aws_iam_role.lambda_items: fridgeops-dev-lambda-items-role / arn:aws:iam::529928146765:role/fridgeops-dev-lambda-items-role
+  - aws_iam_role_policy_attachment.lambda_items_basic: AWSLambdaBasicExecutionRole
+  - aws_iam_role_policy_attachment.lambda_items_rw: fridgeops-dev-lambda-items-rw
+- outputs:
+  - items_lambda_function_name: fridgeops-dev-items
+  - items_lambda_function_arn: arn:aws:lambda:ap-northeast-1:529928146765:function:fridgeops-dev-items
+- 既存 outputs（参考）:
+  - cloudfront_distribution_id: E2GH725XIVJDDY
+  - cloudfront_domain_name: d3nzcmll7ylltp.cloudfront.net
+  - items_table_name: fridgeops-dev-items
+  - lambda_items_role_arn: arn:aws:iam::529928146765:role/fridgeops-dev-lambda-items-role
+  - static_bucket_name: fridgeops-dev-static-31be4264
 
-
+### state（残存リソース基線）
+- terraform -chdir=infra/main state list:
+  - data.archive_file.lambda_items_zip
+  - data.aws_caller_identity.current
+  - data.aws_iam_policy_document.lambda_items_rw
+  - data.aws_iam_policy_document.static_bucket_policy
+  - aws_cloudfront_distribution.static
+  - aws_cloudfront_origin_access_control.static
+  - aws_dynamodb_table.items
+  - aws_iam_policy.lambda_items_rw
+  - aws_iam_role.lambda_items
+  - aws_iam_role_policy_attachment.lambda_items_basic
+  - aws_iam_role_policy_attachment.lambda_items_rw
+  - aws_lambda_function.items
+  - aws_s3_bucket.static
+  - aws_s3_bucket_ownership_controls.static
+  - aws_s3_bucket_policy.static
+  - aws_s3_bucket_public_access_block.static
+  - aws_s3_bucket_server_side_encryption_configuration.static
+  - aws_s3_bucket_versioning.static
+  - aws_s3_object.index_html
+  - random_id.bucket_suffix
+### 今日收尾
+- terraform -chdir=infra/main destroy: Destroy complete（Resources: 16 destroyed）
+- terraform -chdir=infra/main state list: no output（state empty）
