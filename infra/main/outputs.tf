@@ -8,3 +8,10 @@ output "items_table_name" {
 output "lambda_items_role_arn" {
   value = aws_iam_role.lambda_items.arn
 }
+output "items_lambda_function_name" {
+  value = aws_lambda_function.items.function_name
+}
+
+output "items_lambda_function_arn" {
+  value = aws_lambda_function.items.arn
+}
