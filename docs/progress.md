@@ -1,50 +1,71 @@
 # FridgeOps 進捗ログ（毎日）
 
-> ルール：毎日「追記のみ」。過去分は書き換えない。Terraform の resource address/label は plan/apply 出力からコピーする（推測禁止）。
+> 方針：基本は追記。resource address/label は必ず plan / state / apply からコピペ（推測しない）。
+> ※2026-02-05：Day6〜Day10 は読みやすさのために表現だけ統一（事実は変えない）。
 
 ---
 
 ## Day6
-### 今日の目的
-- 進捗ログ（SSOT）を固定する
-- セキュリティ文書と検証チェックリストの土台を作る（Day6 内で実施）
+### 今日のねらい
+- 進捗ログ（ここ）を SSOT にする
+- セキュリティ文書と検証チェックリストの土台を作る（Day6 内で完結させる想定）
+
+### 今日やったこと
+- 進捗ログのフォーマットを固定
+- 既存の検証証跡（Day5）を参照できる状態に整理
 
 ### Terraform 変更（resource address/label）
-- N/A（Day6 はクラウド資源の作成/変更なし）
+- なし（クラウド資源の作成/変更はしていない）
 
-### Outputs（重要な出力）
-- N/A
+### Outputs
+- なし
 
 ### 検証/証跡（docs/verify-*.txt）
-- docs/verify-s3-direct-403.txt（S3 直アクセスが 403 になる証跡：Day5）
+- docs/verify-s3-direct-403.txt（S3 直アクセスが 403 になる：Day5 の証跡）
 
 ### メモ
-- 現状：infra/main は destroy 済み（クリーン）。infra/bootstrap は remote state（S3）と lock（DynamoDB）を保持。
+- infra/main は destroy 済み（クリーン）
+- infra/bootstrap は remote state（S3）/ lock（DynamoDB）を保持したまま
 
-### Day7（途中）: CI（OIDC）進捗
-- Created: aws_iam_openid_connect_provider.github_actions
-- Output: github_oidc_provider_arn = arn:aws:iam::529928146765:oidc-provider/token.actions.githubusercontent.com
-- Created: aws_iam_role.tf_plan（fridgeops-ci-tf-plan）
-- Output: tf_plan_role_arn = arn:aws:iam::529928146765:role/fridgeops-ci-tf-plan
-## Day8
-### 今日の目的
-- GitHub Actions（OIDC）で terraform fmt/validate/plan をCIで回す（infra/ci + infra/main）
-- CI を「実行して証拠が残る状態」まで到達させる（Day8 完了条件）
+
+## Day7
+### 今日のねらい
+- CI 用の OIDC まわりを用意して、GitHub Actions から plan を回す下地を作る
 
 ### Terraform 変更（resource address/label）
-- 変更なし（※今日はCI/変数/フォーマット修正のみ。クラウド資源の追加作成はなし）
+- Created:
+  - aws_iam_openid_connect_provider.github_actions
+  - aws_iam_role.tf_plan
 
-### Outputs（重要な出力）
-- N/A（変更なし）
+### Outputs（重要）
+- github_oidc_provider_arn
+  - arn:aws:iam::529928146765:oidc-provider/token.actions.githubusercontent.com
+- tf_plan_role_arn
+  - arn:aws:iam::529928146765:role/fridgeops-ci-tf-plan
 
-### 検証/証跡
-- GitHub Actions: terraform-ci が Success（OIDC → fmt/validate/plan が infra/ci / infra/main 両方で完走）
+### メモ
+- Day7 は「作ったところまで」。CI 完走（証跡が残る状態）は Day8 でやる
 
-### やったこと / 詰まりポイントと解消
-- CI が var.github_repo の入力待ちで停止 → infra/ci/variables.tf に default を追加して非対話化
-- CI が state lock 取得失敗（ConditionalCheckFailedException）→ infra/ci で terraform init 後に force-unlock 
-でロック解除
-- CI が Terraform fmt (infra/main) で失敗 → infra/main で terraform fmt 実行してフォーマット修正
+
+## Day8
+### 今日のねらい
+- GitHub Actions（OIDC）で terraform fmt/validate/plan を CI で完走させる（infra/ci + infra/main）
+- “動いた証拠が残る” ところまで持っていく
+
+### 今日の成果（証跡）
+- GitHub Actions: terraform-ci が Success
+  - OIDC → fmt/validate/plan が infra/ci / infra/main 両方で完走
+
+### Terraform 変更（resource address/label）
+- なし（今日は CI/変数/フォーマット修正のみ。クラウド資源の追加作成はなし）
+
+### 詰まりポイントと解消（メモ）
+- CI が var.github_repo の入力待ちで止まる
+  - → infra/ci/variables.tf に default を追加して非対話化
+- state lock 取得失敗（ConditionalCheckFailedException）
+  - → infra/ci で terraform init 後に force-unlock でロック解除
+- Terraform fmt（infra/main）で CI が落ちる
+  - → infra/main で terraform fmt 実行して修正
 
 ### 変更したファイル
 - infra/ci/variables.tf（github_repo に default 追加）
@@ -55,50 +76,72 @@
 - 6cda34f: Fix: set default github_repo for CI non-interactive plan
 - d63a681: chore: terraform fmt for infra/main
 
+
 ## Day9
-### 今日の目的
-- API の型を決める（REST API を採用）
-- MVP の API Contract を固定して後工程のブレを止める
+### 今日のねらい
+- API の型を決める（REST を採用）
+- MVP の API Contract を固定して、後工程のブレを止める（GET/POST /api/items）
 
 ### 今日の成果
-- ADR を追加：docs/adr/ADR-0001.md（REST 採用 + Contract 固定）
+- ADR 追加：docs/adr/ADR-0001.md（REST 採用 + Contract 固定）
 
 ### 変更（ファイル/コミット）
 - New: docs/adr/ADR-0001.md
 - Commit: 98080e6 (docs(adr): decide REST API and freeze MVP contract)
 
-### 次にやること（Day10 へ）
-- DynamoDB（items テーブル）＋ Lambda（list/add）実装に着手
+### 次にやること（Day10）
+- DynamoDB（items）＋ Lambda（list/add）に着手
 - Contract v1（GET/POST /api/items）前提でハンドラ作成
 
 
-## 2026-02-05 Day10 (infra/main)
+## Day10
+### 今日のねらい
+- DynamoDB（items テーブル）を IaC に追加
+- infra/main を apply して、検証できる状態まで持っていく
+
+### 結果（apply）
 - Apply: Resources: 11 added, 0 changed, 0 destroyed
-- Outputs:
-  - cloudfront_distribution_id: E2GH725XIVJDDY
-  - cloudfront_domain_name: d3nzcmll7ylltp.cloudfront.net
-  - static_bucket_name: fridgeops-dev-static-31be4264
 
-### Resources (Terraform addresses)
-- data.aws_caller_identity.current
-- data.aws_iam_policy_document.static_bucket_policy
-- aws_cloudfront_distribution.static
-- aws_cloudfront_origin_access_control.static
-- aws_dynamodb_table.items
-- aws_s3_bucket.static
-- aws_s3_bucket_ownership_controls.static
-- aws_s3_bucket_policy.static
-- aws_s3_bucket_public_access_block.static
-- aws_s3_bucket_server_side_encryption_configuration.static
-- aws_s3_bucket_versioning.static
-- aws_s3_object.index_html
-- random_id.bucket_suffix
+### Outputs（重要な出力）
+- cloudfront_distribution_id: E2GH725XIVJDDY
+- cloudfront_domain_name: d3nzcmll7ylltp.cloudfront.net
+- static_bucket_name: fridgeops-dev-static-31be4264
 
-### DynamoDB items table
-- address: aws_dynamodb_table.items
+### Terraform 変更（resource address/label）
+- Read（data）:
+  - data.aws_caller_identity.current
+  - data.aws_iam_policy_document.static_bucket_policy
+- Created（apply）:
+  - aws_cloudfront_distribution.static
+  - aws_cloudfront_origin_access_control.static
+  - aws_s3_bucket.static
+  - aws_s3_bucket_ownership_controls.static
+  - aws_s3_bucket_policy.static
+  - aws_s3_bucket_public_access_block.static
+  - aws_s3_bucket_server_side_encryption_configuration.static
+  - aws_s3_bucket_versioning.static
+  - aws_s3_object.index_html
+  - aws_dynamodb_table.items
+  - random_id.bucket_suffix
+
+### DynamoDB（items）
+- tf address: aws_dynamodb_table.items
 - name: fridgeops-dev-items
 - arn: arn:aws:dynamodb:ap-northeast-1:529928146765:table/fridgeops-dev-items
 - billing: PAY_PER_REQUEST
-- key: id (S)
+- key: id（S）
 - sse: enabled
-- ttl: expiresAt (enabled)
+- ttl: expiresAt（enabled）
+
+### 検証/証跡（docs/verify-*.txt）
+- なし（未作成）
+
+### メモ（確認コマンド）
+- state:
+  - terraform -chdir=infra/main state list
+  - terraform -chdir=infra/main state show aws_dynamodb_table.items
+- outputs:
+  - terraform -chdir=infra/main output
+- outputs 追加:
+  - items_table_name: fridgeops-dev-items
+
