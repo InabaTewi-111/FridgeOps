@@ -4,7 +4,7 @@
 
 ---
 
-## 2026-01-29（Day6）
+## Day6
 ### 今日の目的
 - 進捗ログ（SSOT）を固定する
 - セキュリティ文書と検証チェックリストの土台を作る（Day6 内で実施）
@@ -26,3 +26,32 @@
 - Output: github_oidc_provider_arn = arn:aws:iam::529928146765:oidc-provider/token.actions.githubusercontent.com
 - Created: aws_iam_role.tf_plan（fridgeops-ci-tf-plan）
 - Output: tf_plan_role_arn = arn:aws:iam::529928146765:role/fridgeops-ci-tf-plan
+## Day8
+### 今日の目的
+- GitHub Actions（OIDC）で terraform fmt/validate/plan をCIで回す（infra/ci + infra/main）
+- CI を「実行して証拠が残る状態」まで到達させる（Day8 完了条件）
+
+### Terraform 変更（resource address/label）
+- 変更なし（※今日はCI/変数/フォーマット修正のみ。クラウド資源の追加作成はなし）
+
+### Outputs（重要な出力）
+- N/A（変更なし）
+
+### 検証/証跡
+- GitHub Actions: terraform-ci が Success（OIDC → fmt/validate/plan が infra/ci / infra/main 両方で完走）
+
+### やったこと / 詰まりポイントと解消
+- CI が var.github_repo の入力待ちで停止 → infra/ci/variables.tf に default を追加して非対話化
+- CI が state lock 取得失敗（ConditionalCheckFailedException）→ infra/ci で terraform init 後に force-unlock 
+でロック解除
+- CI が Terraform fmt (infra/main) で失敗 → infra/main で terraform fmt 実行してフォーマット修正
+
+### 変更したファイル
+- infra/ci/variables.tf（github_repo に default 追加）
+- infra/main/cloudfront_static.tf（fmt）
+- infra/main/s3_static_bucket_policy.tf（fmt）
+
+### Commit
+- 6cda34f: Fix: set default github_repo for CI non-interactive plan
+- d63a681: chore: terraform fmt for infra/main
+
