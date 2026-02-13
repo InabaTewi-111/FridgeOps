@@ -1,130 +1,128 @@
-# FridgeOps 進捗ログ（毎日）
+# FridgeOps 進捗ログ（SSOT）
 
-> 方針：基本は追記。resource address/label は必ず plan / state / apply からコピペ（推測しない）。
-> ※2026-02-05：Day6〜Day10 は読みやすさのために表現だけ統一（事実は変えない）。
+## 現状（Day12 / infra/main apply 済み）
+
+v1（優先）
+- CloudFront を入口に固定
+  - default: private S3（OAC）
+  - /api/*: API Gateway（HTTP API / apigatewayv2）
+- API: Lambda items（list/add）+ DynamoDB
+- CI: GitHub Actions + OIDC（long-lived key なし）
+- Observability: CloudWatch（Logs + Alarm 最小 1つ）
+
+v2（後で）
+- OpenAI / cache / risk & cost control（v1 に混ぜない）
 
 ---
 
-## Day6
-### 今日のねらい
-- 進捗ログ（ここ）を SSOT にする
-- セキュリティ文書と検証チェックリストの土台を作る（Day6 内で完結させる想定）
+## Day1（repo の骨格）
+やったこと
+- repo の骨格を作成（infra/bootstrap, infra/main, docs, workload の前提）
+- README / docs の入口を用意（最低限）
 
-### 今日やったこと
-- 進捗ログのフォーマットを固定
-- 既存の検証証跡（Day5）を参照できる状態に整理
-
-### Terraform 変更（resource address/label）
-- なし（クラウド資源の作成/変更はしていない）
-
-### Outputs
+Terraform 変更
 - なし
 
-### 検証/証跡（docs/verify-*.txt）
-- docs/verify-s3-direct-403.txt（S3 直アクセスが 403 になる：Day5 の証跡）
+---
 
-### メモ
-- infra/main は destroy 済み（クリーン）
-- infra/bootstrap は remote state（S3）/ lock（DynamoDB）を保持したまま
+## Day2（v1 の構成を先に固定）
+やったこと
+- v1 の構成（CloudFront entry / OAC / /api/*）を文章と図で整理
+- 以降の実装が迷子にならないように “入口” と “境界” を先に決めた
 
+Terraform 変更
+- なし
 
-## Day7
-### 今日のねらい
-- CI 用の OIDC まわりを用意して、GitHub Actions から plan を回す下地を作る
+---
 
-### Terraform 変更（resource address/label）
-- Created:
+## Day3（bootstrap / remote state）
+ねらい
+- state 分裂を防ぐ（S3 backend + DynamoDB lock）
+
+Terraform 変更（resource address/label）
+- Created（infra/bootstrap）
+  - aws_s3_bucket.tfstate → S3 bucket: fridgeops-dev-tfstate-fd25e7e4
+  - aws_dynamodb_table.tf_lock → DynamoDB table: fridgeops-dev-tf-lock
+
+メモ
+- infra/bootstrap は保持（原則 destroy しない）
+
+---
+
+## Day4（infra/main の土台を作る）
+やったこと
+- infra/main の土台（static 側中心）を組み始めた
+- apply/destroy の型を作るための下準備
+
+Terraform 変更
+- あり（当時の詳細は state/apply 出力に準拠）
+
+---
+
+## Day5（CloudFront + OAC の drift 収束 / 証跡）
+やったこと
+- CloudFront + OAC の drift を潰して plan を安定化
+- S3 direct 403（OAC 有効）の証跡を残した
+- その日の main を destroy して “片付く” ところまで確認
+
+証跡
+- docs/verify-s3-direct-403.txt（S3 直アクセスが 403）
+
+---
+
+## Day6（ログ整備）
+やったこと
+- 進捗ログのフォーマットを固定
+- 既存の証跡（Day5）を参照できる状態に整理
+
+Terraform 変更
+- なし
+
+---
+
+## Day7（OIDC 基礎）
+やったこと
+- CI 用の OIDC provider / role を作成（次で Actions を完走させる）
+
+Terraform 変更（resource address/label）
+- Created（infra/ci）
   - aws_iam_openid_connect_provider.github_actions
   - aws_iam_role.tf_plan
 
-### Outputs（重要）
-- github_oidc_provider_arn
+Outputs（重要）
+- github_oidc_provider_arn:
   - arn:aws:iam::529928146765:oidc-provider/token.actions.githubusercontent.com
-- tf_plan_role_arn
+- tf_plan_role_arn:
   - arn:aws:iam::529928146765:role/fridgeops-ci-tf-plan
 
-### メモ
-- Day7 は「作ったところまで」。CI 完走（証跡が残る状態）は Day8 でやる
+---
 
+## Day8（CI 完走）
+やったこと
+- GitHub Actions（OIDC）で terraform fmt/validate/plan を完走（証跡が残る状態）
 
-## Day8
-### 今日のねらい
-- GitHub Actions（OIDC）で terraform fmt/validate/plan を CI で完走させる（infra/ci + infra/main）
-- “動いた証拠が残る” ところまで持っていく
+Terraform 変更
+- なし（クラウド資源の追加作成なし）
 
-### 今日の成果（証跡）
-- GitHub Actions: terraform-ci が Success
-  - OIDC → fmt/validate/plan が infra/ci / infra/main 両方で完走
+---
 
-### Terraform 変更（resource address/label）
-- なし（今日は CI/変数/フォーマット修正のみ。クラウド資源の追加作成はなし）
+## Day9（API 方針の履歴 / v1-v2 の整理）
+やったこと（当時）
+- docs/adr/ADR-0001.md を追加（REST 案 + Contract 固定）
 
-### 詰まりポイントと解消（メモ）
-- CI が var.github_repo の入力待ちで止まる
-  - → infra/ci/variables.tf に default を追加して非対話化
-- state lock 取得失敗（ConditionalCheckFailedException）
-  - → infra/ci で terraform init 後に force-unlock でロック解除
-- Terraform fmt（infra/main）で CI が落ちる
-  - → infra/main で terraform fmt 実行して修正
+メモ（いまの正）
+- 実体は HTTP API（apigatewayv2）で固まっている
+- REST 案は履歴として残す（Superseded 扱い）
+- v1 を優先して “検収できる E2E” に寄せる方針に切り替えた
 
-### 変更したファイル
-- infra/ci/variables.tf（github_repo に default 追加）
-- infra/main/cloudfront_static.tf（fmt）
-- infra/main/s3_static_bucket_policy.tf（fmt）
+---
 
-### Commit
-- 6cda34f: Fix: set default github_repo for CI non-interactive plan
-- d63a681: chore: terraform fmt for infra/main
+## Day10（DynamoDB + IAM）
+やったこと
+- DynamoDB（items）を追加
+- Lambda 用 IAM（role/policy/attachment）を整理
 
-
-## Day9
-### 今日のねらい
-- API の型を決める（REST を採用）
-- MVP の API Contract を固定して、後工程のブレを止める（GET/POST /api/items）
-
-### 今日の成果
-- ADR 追加：docs/adr/ADR-0001.md（REST 採用 + Contract 固定）
-
-### 変更（ファイル/コミット）
-- New: docs/adr/ADR-0001.md
-- Commit: 98080e6 (docs(adr): decide REST API and freeze MVP contract)
-
-### 次にやること（Day10）
-- DynamoDB（items）＋ Lambda（list/add）に着手
-- Contract v1（GET/POST /api/items）前提でハンドラ作成
-
-
-## Day10
-### 今日のねらい
-- DynamoDB（items テーブル）を IaC に追加
-- infra/main を apply して、検証できる状態まで持っていく
-
-### 結果（apply）
-- Apply: Resources: 11 added, 0 changed, 0 destroyed
-
-### Outputs（重要な出力）
-- cloudfront_distribution_id: E2GH725XIVJDDY
-- cloudfront_domain_name: d3nzcmll7ylltp.cloudfront.net
-- static_bucket_name: fridgeops-dev-static-31be4264
-
-### Terraform 変更（resource address/label）
-- Read（data）:
-  - data.aws_caller_identity.current
-  - data.aws_iam_policy_document.static_bucket_policy
-- Created（apply）:
-  - aws_cloudfront_distribution.static
-  - aws_cloudfront_origin_access_control.static
-  - aws_s3_bucket.static
-  - aws_s3_bucket_ownership_controls.static
-  - aws_s3_bucket_policy.static
-  - aws_s3_bucket_public_access_block.static
-  - aws_s3_bucket_server_side_encryption_configuration.static
-  - aws_s3_bucket_versioning.static
-  - aws_s3_object.index_html
-  - aws_dynamodb_table.items
-  - random_id.bucket_suffix
-
-### DynamoDB（items）
+DynamoDB（items）
 - tf address: aws_dynamodb_table.items
 - name: fridgeops-dev-items
 - arn: arn:aws:dynamodb:ap-northeast-1:529928146765:table/fridgeops-dev-items
@@ -133,105 +131,129 @@
 - sse: enabled
 - ttl: expiresAt（enabled）
 
-### 検証/証跡（docs/verify-*.txt）
-- なし（未作成）
+IAM（items）
+- policy:
+  - aws_iam_policy.lambda_items_rw（fridgeops-dev-lambda-items-rw）
+- role:
+  - aws_iam_role.lambda_items（fridgeops-dev-lambda-items-role）
+- attachments:
+  - aws_iam_role_policy_attachment.lambda_items_basic（AWSLambdaBasicExecutionRole）
+  - aws_iam_role_policy_attachment.lambda_items_rw（fridgeops-dev-lambda-items-rw）
 
-### メモ（確認コマンド）
-- state:
-  - terraform -chdir=infra/main state list
-  - terraform -chdir=infra/main state show aws_dynamodb_table.items
-- outputs:
-  - terraform -chdir=infra/main output
-- outputs 追加:
-  - items_table_name: fridgeops-dev-items
-- iam:
-  - policy:
-    - aws_iam_policy.lambda_items_rw: created
-  - name: fridgeops-dev-lambda-items-rw
-  - arn: arn:aws:iam::529928146765:policy/fridgeops-dev-lambda-items-rw
-  - actions: dynamodb:GetItem, dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:Query, dynamodb:Scan
-  - resource: arn:aws:dynamodb:ap-northeast-1:529928146765:table/fridgeops-dev-items
-  - tf: infra/main/iam_lambda_items_policy.tf
-  - role:
-    - aws_iam_role.lambda_items: created
-  - role_name: fridgeops-dev-lambda-items-role
-  - role_arn: arn:aws:iam::529928146765:role/fridgeops-dev-lambda-items-role
-  - attachments:
-    - aws_iam_role_policy_attachment.lambda_items_basic: AWSLambdaBasicExecutionRole
-    - aws_iam_role_policy_attachment.lambda_items_rw: fridgeops-dev-lambda-items-rw
-  -- output: lambda_items_role_arn: arn:aws:iam::529928146765:role/fridgeops-dev-lambda-items-role
-  - tf: infra/main/iam_lambda_items_role.tf
-## Day11
+---
 
-### 検証/証跡 (docs/verify-*.txt)
-- docs/verify-lambda-items-invoke.txt: lambda invokeで items の list/add を確認（GET empty -> POST add -> GET list）
+## Day11（Lambda items 実装 + invoke 証跡）
+証跡
+- docs/verify-lambda-items-invoke.txt
+  - lambda invoke で items の list/add を確認（GET empty → POST add → GET list）
 
-### メモ（確認コマンド）
-- init/validate:
-  - terraform -chdir=infra/main init
-  - terraform -chdir=infra/main validate
-- plan（差分確認）:
-  - terraform -chdir=infra/main plan -no-color | grep '^  # '
-- lambda 動作確認（AWS CLI / HTTP API v2 形式、raw payload 指定）:
-  - aws lambda invoke --cli-binary-format raw-in-base64-out --function-name fridgeops-dev-items --payload '{"version":"2.0","rawPath":"/items","requestContext":{"http":{"method":"GET"}}}' /tmp/invoke_get.json && cat /tmp/invoke_get.json
-  - aws lambda invoke --cli-binary-format raw-in-base64-out --function-name fridgeops-dev-items --payload '{"version":"2.0","rawPath":"/items","requestContext":{"http":{"method":"POST"}},"headers":{"content-type":"application/json"},"body":"{\"name\":\"egg\",\"quantity\":2,\"unit\":\"pcs\"}"}' /tmp/invoke_post.json && cat /tmp/invoke_post.json
+実装（要点）
+- workload/lambda/items/handler.py: GET /items, POST /items
+- infra/main/lambda_items.tf: zip → aws_lambda_function.items
+- outputs 追加: items_lambda_function_name / items_lambda_function_arn
 
-### 変更内容（実装）
-- workload:
-  - workload/lambda/items/handler.py: items API（GET /items, POST /items）実装
-  - workload/lambda/items/requirements.txt: （現状なし）
-- infra:
-  - infra/main/s3_static_bucket.tf: required_providers に archive を追加
-  - infra/main/lambda_items.tf: archive_fileでzip作成 → aws_lambda_function.items を作成
-  - infra/main/outputs.tf: items_lambda_function_name / items_lambda_function_arn を追加
-  - infra/main/.terraform.lock.hcl: provider更新（terraform init により archive 追加）
+当時の収尾
+- terraform -chdir=infra/main destroy（Resources: 16 destroyed）
+- state empty（main はクリーン）
 
-### 作成/更新したリソース（Terraform address / 実体）
-- aws_lambda_function.items: created
-  - function_name: fridgeops-dev-items
-  - arn: arn:aws:lambda:ap-northeast-1:529928146765:function:fridgeops-dev-items
-  - runtime: python3.11
-  - handler: handler.handler
-  - role: arn:aws:iam::529928146765:role/fridgeops-dev-lambda-items-role
-  - env: ITEMS_TABLE_NAME=fridgeops-dev-items
-  - tf: infra/main/lambda_items.tf
-- iam:
-  - aws_iam_policy.lambda_items_rw: arn:aws:iam::529928146765:policy/fridgeops-dev-lambda-items-rw
-  - aws_iam_role.lambda_items: fridgeops-dev-lambda-items-role / arn:aws:iam::529928146765:role/fridgeops-dev-lambda-items-role
-  - aws_iam_role_policy_attachment.lambda_items_basic: AWSLambdaBasicExecutionRole
-  - aws_iam_role_policy_attachment.lambda_items_rw: fridgeops-dev-lambda-items-rw
-- outputs:
-  - items_lambda_function_name: fridgeops-dev-items
-  - items_lambda_function_arn: arn:aws:lambda:ap-northeast-1:529928146765:function:fridgeops-dev-items
-- 既存 outputs（参考）:
-  - cloudfront_distribution_id: E2GH725XIVJDDY
-  - cloudfront_domain_name: d3nzcmll7ylltp.cloudfront.net
-  - items_table_name: fridgeops-dev-items
-  - lambda_items_role_arn: arn:aws:iam::529928146765:role/fridgeops-dev-lambda-items-role
-  - static_bucket_name: fridgeops-dev-static-31be4264
+---
 
-### state（残存リソース基線）
-- terraform -chdir=infra/main state list:
-  - data.archive_file.lambda_items_zip
-  - data.aws_caller_identity.current
-  - data.aws_iam_policy_document.lambda_items_rw
-  - data.aws_iam_policy_document.static_bucket_policy
+## Day12（HTTP API + CloudFront /api/* 合流 / apply）
+結果（apply）
+- Apply complete! Resources: 22 added, 0 changed, 0 destroyed.
+
+Outputs（参考：直近）
+- cloudfront_distribution_id = E1NKKAKYVQ3EH9
+- cloudfront_domain_name     = dilvuf142d1ls.cloudfront.net
+- items_lambda_function_arn   = arn:aws:lambda:ap-northeast-1:529928146765:function:fridgeops-dev-items
+- items_lambda_name           = fridgeops-dev-items
+- items_table_name            = fridgeops-dev-items
+- lambda_items_role_arn       = arn:aws:iam::529928146765:role/fridgeops-dev-lambda-items-role
+- static_bucket_name          = fridgeops-dev-static-fc37572a
+
+plan に出る主要（概観）
+- API（HTTP API / apigatewayv2）:
+  - aws_apigatewayv2_api.items
+  - aws_apigatewayv2_integration.*
+  - aws_apigatewayv2_route.*（GET/POST）
+  - aws_apigatewayv2_stage.default
+- Lambda:
+  - aws_lambda_function.items
+  - aws_lambda_permission.apigw_invoke
+- DynamoDB:
+  - aws_dynamodb_table.items
+- Static:
   - aws_cloudfront_distribution.static
   - aws_cloudfront_origin_access_control.static
-  - aws_dynamodb_table.items
-  - aws_iam_policy.lambda_items_rw
-  - aws_iam_role.lambda_items
-  - aws_iam_role_policy_attachment.lambda_items_basic
-  - aws_iam_role_policy_attachment.lambda_items_rw
-  - aws_lambda_function.items
-  - aws_s3_bucket.static
-  - aws_s3_bucket_ownership_controls.static
-  - aws_s3_bucket_policy.static
-  - aws_s3_bucket_public_access_block.static
-  - aws_s3_bucket_server_side_encryption_configuration.static
-  - aws_s3_bucket_versioning.static
-  - aws_s3_object.index_html
-  - random_id.bucket_suffix
-### 今日收尾
-- terraform -chdir=infra/main destroy: Destroy complete（Resources: 16 destroyed）
-- terraform -chdir=infra/main state list: no output（state empty）
+  - aws_s3_bucket.static / policy / object
+
+---
+
+# v1 検収チェック（現行）
+
+ルール
+- チェックは必ず “実行ログ / コマンド出力 / 画面キャプチャ” を添付（docs/verify-*.txt）
+- v2（OpenAI 等）はここに入れない
+
+## 1. 実行情報（Run Info）
+- Date:
+- Git commit:
+- AWS Region: ap-northeast-1
+- State:
+  - infra/bootstrap: 保持
+  - infra/ci: 保持
+  - infra/main: apply/destroy 対象
+
+## 2. 重要な出力（Outputs）
+- CloudFront Domain:
+- CloudFront Distribution ID:
+- Static S3 Bucket Name:
+- DynamoDB Table Name:
+- Lambda Name:
+- 証跡:
+  - docs/outputs-current.txt（terraform -chdir=infra/main output の全文）
+
+## 3. DoD 検証（必須）
+
+### 3.1 CloudFront で静的ページが表示できる
+- [ ] CloudFront の URL にアクセスして 200/HTML が返る
+- 証跡:
+  - docs/verify-cf-root-200.txt（curl -I など）
+
+### 3.2 S3 直アクセスが 403（バイパス不可 / OAC 有効）
+- [ ] S3 オブジェクト直アクセスで 403 が返る（署名無し）
+- 証跡:
+  - docs/verify-s3-direct-403.txt
+
+### 3.3 GitHub Actions（OIDC）で fmt/validate/plan が成功（AWS Key 不使用）
+- [ ] Workflow が green（fmt/validate/plan）
+- [ ] long-lived AWS Access Key を repo に置いていない
+- 証跡:
+  - docs/verify-ci-plan.txt（成功ログ抜粋）
+
+### 3.4 API（list/add）が CloudFront 経由（同一ドメイン）で検証できる
+- [ ] GET  /api/items が成功（200 + JSON）
+- [ ] POST /api/items が成功
+- [ ] POST 後に GET で反映される
+- 証跡:
+  - docs/verify-api-curl.txt（GET/POST の出力）
+メモ
+- v1 の API は HTTP API（apigatewayv2）
+- 入口は CloudFront（/api/* → API）
+
+### 3.5 監視（Logs + Alarm 最小 1つ）
+- [ ] CloudWatch Logs が見える
+- [ ] 尖った Alarm を 1 つ以上（例: Lambda Errors / API 5XX）
+- 証跡:
+  - docs/verify-alarm.txt（確認ログ）
+  - （同ファイル末尾に 10 行以内の対応メモも一緒に貼る）
+
+### 3.6 destroy 後に主要リソースの残骸がない
+- [ ] terraform destroy が成功（エラー無し）
+- [ ] 残るべきものは bootstrap/ci のみ
+- 証跡:
+  - docs/verify-destroy.txt（destroy 出力抜粋）
+
+## 4. 追加メモ（任意）
+- 詰まった点 / 回避策:
+- 取捨選択の理由（短く）:

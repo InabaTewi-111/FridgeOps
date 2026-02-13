@@ -1,3 +1,7 @@
+data.archive_file.lambda_items_zip: Reading...
+data.archive_file.lambda_items_zip: Read complete after 0s [id=ec4e5ff34f9a63fa9eff1fe92da3d142cb35fd32]
+data.aws_caller_identity.current: Reading...
+data.aws_caller_identity.current: Read complete after 0s [id=529928146765]
 
 Terraform used the selected providers to generate the following execution
 plan. Resource actions are indicated with the following symbols:
@@ -5,6 +9,29 @@ plan. Resource actions are indicated with the following symbols:
  <= read (data resources)
 
 Terraform will perform the following actions:
+
+  # data.aws_iam_policy_document.lambda_items_rw will be read during apply
+  # (config refers to values not yet known)
+ <= data "aws_iam_policy_document" "lambda_items_rw" {
+      + id            = (known after apply)
+      + json          = (known after apply)
+      + minified_json = (known after apply)
+
+      + statement {
+          + actions   = [
+              + "dynamodb:DeleteItem",
+              + "dynamodb:GetItem",
+              + "dynamodb:PutItem",
+              + "dynamodb:Query",
+              + "dynamodb:Scan",
+              + "dynamodb:UpdateItem",
+            ]
+          + resources = [
+              + (known after apply),
+            ]
+          + sid       = "DynamoDBItemsRW"
+        }
+    }
 
   # data.aws_iam_policy_document.static_bucket_policy will be read during apply
   # (config refers to values not yet known)
@@ -37,6 +64,79 @@ Terraform will perform the following actions:
               + type        = "Service"
             }
         }
+    }
+
+  # aws_apigatewayv2_api.items will be created
+  + resource "aws_apigatewayv2_api" "items" {
+      + api_endpoint                 = (known after apply)
+      + api_key_selection_expression = "$request.header.x-api-key"
+      + arn                          = (known after apply)
+      + execution_arn                = (known after apply)
+      + id                           = (known after apply)
+      + ip_address_type              = (known after apply)
+      + name                         = "fridgeops-dev-api"
+      + protocol_type                = "HTTP"
+      + route_selection_expression   = "$request.method $request.path"
+      + tags_all                     = (known after apply)
+
+      + cors_configuration {
+          + allow_headers = [
+              + "content-type",
+            ]
+          + allow_methods = [
+              + "GET",
+              + "OPTIONS",
+              + "POST",
+            ]
+          + allow_origins = [
+              + "*",
+            ]
+        }
+    }
+
+  # aws_apigatewayv2_integration.items will be created
+  + resource "aws_apigatewayv2_integration" "items" {
+      + api_id                                    = (known after apply)
+      + connection_type                           = "INTERNET"
+      + id                                        = (known after apply)
+      + integration_response_selection_expression = (known after apply)
+      + integration_type                          = "AWS_PROXY"
+      + integration_uri                           = (known after apply)
+      + payload_format_version                    = "2.0"
+      + timeout_milliseconds                      = 10000
+    }
+
+  # aws_apigatewayv2_route.items_get will be created
+  + resource "aws_apigatewayv2_route" "items_get" {
+      + api_id             = (known after apply)
+      + api_key_required   = false
+      + authorization_type = "NONE"
+      + id                 = (known after apply)
+      + route_key          = "GET /items"
+      + target             = (known after apply)
+    }
+
+  # aws_apigatewayv2_route.items_post will be created
+  + resource "aws_apigatewayv2_route" "items_post" {
+      + api_id             = (known after apply)
+      + api_key_required   = false
+      + authorization_type = "NONE"
+      + id                 = (known after apply)
+      + route_key          = "POST /items"
+      + target             = (known after apply)
+    }
+
+  # aws_apigatewayv2_stage.default will be created
+  + resource "aws_apigatewayv2_stage" "default" {
+      + api_id        = (known after apply)
+      + arn           = (known after apply)
+      + auto_deploy   = true
+      + deployment_id = (known after apply)
+      + execution_arn = (known after apply)
+      + id            = (known after apply)
+      + invoke_url    = (known after apply)
+      + name          = "$default"
+      + tags_all      = (known after apply)
     }
 
   # aws_cloudfront_distribution.static will be created
@@ -126,6 +226,145 @@ Terraform will perform the following actions:
       + origin_access_control_origin_type = "s3"
       + signing_behavior                  = "always"
       + signing_protocol                  = "sigv4"
+    }
+
+  # aws_dynamodb_table.items will be created
+  + resource "aws_dynamodb_table" "items" {
+      + arn              = (known after apply)
+      + billing_mode     = "PAY_PER_REQUEST"
+      + hash_key         = "id"
+      + id               = (known after apply)
+      + name             = "fridgeops-dev-items"
+      + read_capacity    = (known after apply)
+      + stream_arn       = (known after apply)
+      + stream_label     = (known after apply)
+      + stream_view_type = (known after apply)
+      + tags             = {
+          + "Env"     = "dev"
+          + "Project" = "fridgeops"
+        }
+      + tags_all         = {
+          + "Env"     = "dev"
+          + "Project" = "fridgeops"
+        }
+      + write_capacity   = (known after apply)
+
+      + attribute {
+          + name = "id"
+          + type = "S"
+        }
+
+      + server_side_encryption {
+          + enabled     = true
+          + kms_key_arn = (known after apply)
+        }
+
+      + ttl {
+          + attribute_name = "expiresAt"
+          + enabled        = true
+        }
+    }
+
+  # aws_iam_policy.lambda_items_rw will be created
+  + resource "aws_iam_policy" "lambda_items_rw" {
+      + arn              = (known after apply)
+      + attachment_count = (known after apply)
+      + id               = (known after apply)
+      + name             = "fridgeops-dev-lambda-items-rw"
+      + name_prefix      = (known after apply)
+      + path             = "/"
+      + policy           = (known after apply)
+      + policy_id        = (known after apply)
+      + tags_all         = (known after apply)
+    }
+
+  # aws_iam_role.lambda_items will be created
+  + resource "aws_iam_role" "lambda_items" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "lambda.amazonaws.com"
+                        }
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "fridgeops-dev-lambda-items-role"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags_all              = (known after apply)
+      + unique_id             = (known after apply)
+    }
+
+  # aws_iam_role_policy_attachment.lambda_items_basic will be created
+  + resource "aws_iam_role_policy_attachment" "lambda_items_basic" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      + role       = "fridgeops-dev-lambda-items-role"
+    }
+
+  # aws_iam_role_policy_attachment.lambda_items_rw will be created
+  + resource "aws_iam_role_policy_attachment" "lambda_items_rw" {
+      + id         = (known after apply)
+      + policy_arn = (known after apply)
+      + role       = "fridgeops-dev-lambda-items-role"
+    }
+
+  # aws_lambda_function.items will be created
+  + resource "aws_lambda_function" "items" {
+      + architectures                  = (known after apply)
+      + arn                            = (known after apply)
+      + code_sha256                    = (known after apply)
+      + filename                       = "./.terraform/lambda_items.zip"
+      + function_name                  = "fridgeops-dev-items"
+      + handler                        = "handler.handler"
+      + id                             = (known after apply)
+      + invoke_arn                     = (known after apply)
+      + last_modified                  = (known after apply)
+      + memory_size                    = 128
+      + package_type                   = "Zip"
+      + publish                        = false
+      + qualified_arn                  = (known after apply)
+      + qualified_invoke_arn           = (known after apply)
+      + reserved_concurrent_executions = -1
+      + role                           = (known after apply)
+      + runtime                        = "python3.11"
+      + signing_job_arn                = (known after apply)
+      + signing_profile_version_arn    = (known after apply)
+      + skip_destroy                   = false
+      + source_code_hash               = "yjSvvBYmwaUZ96Bln/YmtwrhnVOchH7iJjU2maiXBmU="
+      + source_code_size               = (known after apply)
+      + tags_all                       = (known after apply)
+      + timeout                        = 10
+      + version                        = (known after apply)
+
+      + environment {
+          + variables = {
+              + "ITEMS_TABLE_NAME" = "fridgeops-dev-items"
+            }
+        }
+    }
+
+  # aws_lambda_permission.apigw_invoke_items will be created
+  + resource "aws_lambda_permission" "apigw_invoke_items" {
+      + action              = "lambda:InvokeFunction"
+      + function_name       = "fridgeops-dev-items"
+      + id                  = (known after apply)
+      + principal           = "apigateway.amazonaws.com"
+      + source_arn          = (known after apply)
+      + statement_id        = "AllowAPIGatewayInvokeItems"
+      + statement_id_prefix = (known after apply)
     }
 
   # aws_s3_bucket.static will be created
@@ -253,11 +492,15 @@ Terraform will perform the following actions:
       + id          = (known after apply)
     }
 
-Plan: 10 to add, 0 to change, 0 to destroy.
+Plan: 22 to add, 0 to change, 0 to destroy.
 
 Changes to Outputs:
   + cloudfront_distribution_id = (known after apply)
   + cloudfront_domain_name     = (known after apply)
+  + items_lambda_function_arn  = (known after apply)
+  + items_lambda_function_name = "fridgeops-dev-items"
+  + items_table_name           = "fridgeops-dev-items"
+  + lambda_items_role_arn      = (known after apply)
   + static_bucket_name         = (known after apply)
 
 ─────────────────────────────────────────────────────────────────────────────
