@@ -1,16 +1,9 @@
-resource "aws_cloudfront_origin_access_control" "static" {
-  name                              = "${local.project}-${local.env}-static-oac"
-  description                       = "OAC for private S3 static bucket"
-  origin_access_control_origin_type = "s3"
-  signing_behavior                  = "always"
-  signing_protocol                  = "sigv4"
-}
-
 resource "aws_cloudfront_distribution" "static" {
   enabled             = true
   default_root_object = "index.html"
   price_class         = "PriceClass_200"
 
+  # Origin: S3 static (private) via OAC
   origin {
     domain_name              = aws_s3_bucket.static.bucket_regional_domain_name
     origin_id                = "s3-static"
@@ -21,6 +14,7 @@ resource "aws_cloudfront_distribution" "static" {
     }
   }
 
+  # default -> S3
   default_cache_behavior {
     target_origin_id       = "s3-static"
     viewer_protocol_policy = "redirect-to-https"
@@ -31,9 +25,7 @@ resource "aws_cloudfront_distribution" "static" {
 
     forwarded_values {
       query_string = false
-      cookies {
-        forward = "none"
-      }
+      cookies { forward = "none" }
     }
   }
 
@@ -46,9 +38,4 @@ resource "aws_cloudfront_distribution" "static" {
   viewer_certificate {
     cloudfront_default_certificate = true
   }
-
-  lifecycle {
-    ignore_changes = [origin]
-  }
 }
-

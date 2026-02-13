@@ -187,6 +187,30 @@ plan に出る主要（概観）
   - aws_cloudfront_origin_access_control.static
   - aws_s3_bucket.static / policy / object
 
+## Day12: CloudFront /api/* Route (apply成功)
+
+- `terraform -chdir=infra/main output` (apply後の出力)
+  - cloudfront_distribution_id: E24GQ7URINXRLI
+  - cloudfront_domain_name: d3cjucnmtwwxvv.cloudfront.net
+  - static_bucket_name: fridgeops-dev-static-26f5e151
+  - items_table_name: fridgeops-dev-items
+  - items_lambda_function_name: fridgeops-dev-items
+  - items_lambda_function_arn: arn:aws:lambda:ap-northeast-1:529928146765:function:fridgeops-dev-items
+  - lambda_items_role_arn: arn:aws:iam::529928146765:role/fridgeops-dev-lambda-items-role
+
+- 状態
+  - Day12 の apply は成功（CloudFront / DynamoDB / Lambda の出力が揃っている）
+
+
+  ## Day13: 方針変更（CloudFront 経由の API 転送をやめる）
+
+- 方針変更（v1）
+  - CloudFront の `/api/*` ルーティング（API Gateway への転送 / reverse proxy）を撤回し、CloudFront は静的配信（S3 + OAC）のみに戻した。
+  - 理由: CloudFront + APIGW 転送は制約/差分が多く手戻りが発生しやすく、v1 のスコープ（静的配信の安全デフォルト + IaC 再現性）に対してコスト過大だったため。
+- 検証
+  - `docs/verify-cloudfront-root-200.txt`（CloudFront ルート `HTTP/2 200` を保存）
+
+
 ---
 
 # v1 検収チェック（現行）

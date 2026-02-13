@@ -1,0 +1,15 @@
+HTTP/2 200 
+content-type: text/html; charset=utf-8
+content-length: 311
+last-modified: Fri, 13 Feb 2026 00:57:21 GMT
+x-amz-server-side-encryption: AES256
+x-amz-version-id: null
+accept-ranges: bytes
+server: AmazonS3
+date: Fri, 13 Feb 2026 02:00:46 GMT
+etag: "ce8da601debc6639a6530d8c046d353a"
+x-cache: RefreshHit from cloudfront
+via: 1.1 021acf37ec5f4ef5fbf11aa0404e38ec.cloudfront.net (CloudFront)
+x-amz-cf-pop: KIX56-P5
+x-amz-cf-id: td8BrjlR_kg4skdrAF2HLGwP7DU7jem-D3Iy0vP4sAko5ulgo2ymhA==
+
