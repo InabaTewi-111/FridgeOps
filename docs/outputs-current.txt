@@ -1,5 +1,7 @@
-FridgeOps current outputs (infra/main)
-
-cloudfront_distribution_id = E3E33M72V62QBA
-cloudfront_domain_name     = d2u1xk5k8ylmsn.cloudfront.net
-static_bucket_name         = fridgeops-dev-static-31893b02
+cloudfront_distribution_id = "E24GQ7URINXRLI"
+cloudfront_domain_name = "d3cjucnmtwwxvv.cloudfront.net"
+items_lambda_function_arn = "arn:aws:lambda:ap-northeast-1:529928146765:function:fridgeops-dev-items"
+items_lambda_function_name = "fridgeops-dev-items"
+items_table_name = "fridgeops-dev-items"
+lambda_items_role_arn = "arn:aws:iam::529928146765:role/fridgeops-dev-lambda-items-role"
+static_bucket_name = "fridgeops-dev-static-26f5e151"
