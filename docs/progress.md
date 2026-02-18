@@ -16,7 +16,6 @@ v2（後で）
 ---
 
 ## Day1（repo の骨格）
-やったこと
 - repo の骨格を作成（infra/bootstrap, infra/main, docs, workload の前提）
 - README / docs の入口を用意（最低限）
 
@@ -26,17 +25,11 @@ Terraform 変更
 ---
 
 ## Day2（v1 の構成を先に固定）
-やったこと
 - v1 の構成（CloudFront entry / OAC / /api/*）を文章と図で整理
 - 以降の実装が迷子にならないように “入口” と “境界” を先に決めた
 
-Terraform 変更
-- なし
-
----
 
 ## Day3（bootstrap / remote state）
-ねらい
 - state 分裂を防ぐ（S3 backend + DynamoDB lock）
 
 Terraform 変更（resource address/label）
@@ -44,23 +37,16 @@ Terraform 変更（resource address/label）
   - aws_s3_bucket.tfstate → S3 bucket: fridgeops-dev-tfstate-fd25e7e4
   - aws_dynamodb_table.tf_lock → DynamoDB table: fridgeops-dev-tf-lock
 
-メモ
-- infra/bootstrap は保持（原則 destroy しない）
-
----
 
 ## Day4（infra/main の土台を作る）
 やったこと
 - infra/main の土台（static 側中心）を組み始めた
 - apply/destroy の型を作るための下準備
 
-Terraform 変更
-- あり（当時の詳細は state/apply 出力に準拠）
 
 ---
 
 ## Day5（CloudFront + OAC の drift 収束 / 証跡）
-やったこと
 - CloudFront + OAC の drift を潰して plan を安定化
 - S3 direct 403（OAC 有効）の証跡を残した
 - その日の main を destroy して “片付く” ところまで確認
@@ -71,17 +57,12 @@ Terraform 変更
 ---
 
 ## Day6（ログ整備）
-やったこと
 - 進捗ログのフォーマットを固定
 - 既存の証跡（Day5）を参照できる状態に整理
-
-Terraform 変更
-- なし
 
 ---
 
 ## Day7（OIDC 基礎）
-やったこと
 - CI 用の OIDC provider / role を作成（次で Actions を完走させる）
 
 Terraform 変更（resource address/label）
@@ -210,7 +191,10 @@ plan に出る主要（概観）
 - 検証
   - `docs/verify-cloudfront-root-200.txt`（CloudFront ルート `HTTP/2 200` を保存）
 
-
+## Day14:フロントエンドの更新とUIの設置、V1の仕上げ
+  - フロントエンドv1を実装し、完走した。
+  - UI画像を作って実装を試した。
+  - フロントエンドの微調整を行なった。
 ---
 
 # v1 検収チェック（現行）
