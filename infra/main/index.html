@@ -1,1 +1,970 @@
-<!doctype html><html><head><meta charset="utf-8"><title>FridgeOps Static</title></head><body><h1>FridgeOps Static OK</h1><p>If you see this, CloudFront + OAC works.</p></body></html>
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-store, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>FridgeOps</title>
+  <style>
+    :root{
+      --ui: "/ui";
+
+      /* Layout */
+      --stage-max: 1120px;
+      --stage-pad: 16px;
+      --stage-pad2: 32px;
+      --gap: 24px;
+
+      /* Header */
+      --h-topbar: 96px;
+      --topbar-pad-x: 24px;
+      --topbar-pad-y: 14px;
+
+      /* Topbar tweak: widen + shift image */
+      --topbar-bleed: 18px;   /* 左右を少しはみ出させる */
+      --topbar-img-y: 66%;    /* 画像を少し下へ（表示位置） */
+
+      /* Home */
+      --h-fridge: 380px;
+      --fridge-inset-x: 26px;
+      --fridge-inset-x2: 52px;
+      --fridge-inset-top: 22px;
+      --fridge-inset-bottom: 22px;
+      --h-fridge-toolbar: 42px;
+      --w-fridge-pane: 360px;
+
+      /* V2 (home only) */
+      --h-v2: 320px;
+      --v2-inset: 22px;
+
+      /* Bottom nav */
+      --nav-bottom: 18px;
+      --tab-w: 220px;
+      --tab-h: 58px;
+
+      /* Typography */
+      --text: #173026;
+      --muted: rgba(23,48,38,.75);
+      --line: rgba(23,48,38,.14);
+      --shadow: 0 12px 36px rgba(0,0,0,.08);
+      --soft: rgba(255,255,255,.72);
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", "Segoe UI", Arial, sans-serif;
+      background-color:#f7f7f5;
+      position:relative;
+      overflow-x:hidden;
+    }
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background-image:url("/ui/background_5.png");
+      background-size: 960px auto;
+      background-repeat: repeat;
+      background-position: top left;
+      opacity: .42;
+      pointer-events:none;
+      z-index:-1;
+    }
+
+    a{ color:inherit; text-decoration:none; }
+    button{ font: inherit; color: inherit; }
+
+    .stage{
+      width: min(var(--stage-max), calc(100vw - var(--stage-pad2)));
+      margin: 0 auto;
+    }
+
+    /* ===== Header ===== */
+    header{ padding-top: 12px; }
+
+    .topbar{
+      position: relative;
+      height: var(--h-topbar);
+      overflow: hidden;
+      border-radius: 18px;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.08));
+
+      /* 左右を少し広げる */
+      margin: 6px calc(-1 * var(--topbar-bleed)) 0;
+    }
+    @media (max-width: 620px){
+      .topbar{ margin: 6px 0 0; } /* 小画面ははみ出し無し */
+    }
+
+    .topbar > img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: left var(--topbar-img-y); /* 少し下へ */
+      display: block;
+      border-radius: 18px;
+    }
+    .topbar .content{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: var(--topbar-pad-y) var(--topbar-pad-x);
+      gap: 12px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      min-width: 0;
+      height: 100%;
+    }
+    .logo{
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display:grid;
+      place-items:center;
+      font-weight: 800;
+      background: linear-gradient(135deg, #6bd2a1, #4dbf87);
+      box-shadow: 0 8px 20px rgba(0,0,0,.10);
+      flex: 0 0 auto;
+    }
+    .brandText{
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      line-height: 1.15;
+      min-width: 0;
+    }
+    .brandText .t{
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: .2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .brandText .s{
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .headerBtnWrap{
+      height: 100%;
+      display:flex;
+      align-items:center;
+    }
+    .btn{
+      border: 1px solid rgba(0,0,0,.12);
+      background: rgba(255,255,255,.86);
+      border-radius: 14px;
+      padding: 10px 14px;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,.06);
+      transition: transform .12s ease, box-shadow .12s ease;
+      user-select:none;
+      white-space: nowrap;
+    }
+    .btn:hover{ transform: translateY(-1px); box-shadow: 0 14px 30px rgba(0,0,0,.08); }
+    .btn:active{ transform: translateY(0px); }
+
+    /* ===== Main layout ===== */
+    main{ padding: 18px 0 calc(var(--tab-h) + var(--nav-bottom) + 28px); }
+
+    .grid{
+      display:grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+      gap: var(--gap);
+      align-items:start;
+    }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    /* 1カラム */
+    .grid.oneCol{
+      grid-template-columns: 1fr;
+    }
+
+    .sectionHead{
+      min-height: 74px;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
+      gap: 6px;
+      margin-bottom: 10px;
+      padding-left: 4px;
+    }
+    .sectionHead h2{
+      margin:0;
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: .2px;
+    }
+    .sectionHead p{
+      margin:0;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    /* ===== UI image box template ===== */
+    .uiBox{
+      position: relative;
+      overflow: hidden;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      background: rgba(255,255,255,.08);
+    }
+    .uiBox > img{
+      width: 100%;
+      height: 100%;
+      display:block;
+      object-fit: cover;
+      object-position: left top;
+    }
+    .uiBox .uiContent{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+    }
+
+    /* ===== Fridge panel ===== */
+    .fridgeBox{
+      height: var(--h-fridge);
+    }
+
+    .fridgeToolbar{
+      position:absolute;
+      top: var(--fridge-inset-top);
+      left: var(--fridge-inset-x);
+      right: var(--fridge-inset-x);
+      height: var(--h-fridge-toolbar);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      pointer-events:none;
+    }
+    .fridgeTitle{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width:0;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border: 1px solid rgba(83,170,132,.35);
+      background: rgba(232,255,245,.75);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: rgba(23,48,38,.90);
+      white-space: nowrap;
+    }
+    .addBtn{
+      pointer-events:auto;
+      border: 1px solid rgba(83,170,132,.35);
+      background: rgba(232,255,245,.78);
+      border-radius: 14px;
+      padding: 9px 14px;
+      cursor:pointer;
+      box-shadow: 0 10px 20px rgba(0,0,0,.06);
+      white-space: nowrap;
+      font-weight: 700;
+    }
+
+    .fridgePane{
+      position:absolute;
+      top: calc(var(--fridge-inset-top) + var(--h-fridge-toolbar) + 12px);
+      left: var(--fridge-inset-x);
+      bottom: var(--fridge-inset-bottom);
+      width: min(var(--w-fridge-pane), calc(100% - var(--fridge-inset-x2)));
+      background: rgba(255,255,255,.58);
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 14px 30px rgba(0,0,0,.08);
+      backdrop-filter: blur(6px);
+      pointer-events:auto;
+      overflow:auto;
+    }
+    .itemCard{
+      border: 1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.86);
+      border-radius: 16px;
+      padding: 12px;
+      display:flex;
+      gap: 12px;
+      align-items:center;
+      margin-bottom: 10px;
+    }
+    .itemIcon{
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: rgba(232,255,245,.9);
+      border: 1px solid rgba(83,170,132,.35);
+      display:grid;
+      place-items:center;
+      font-size: 14px;
+      flex: 0 0 auto;
+    }
+    .itemMeta{ min-width:0; flex: 1 1 auto; }
+    .itemName{
+      font-weight: 900;
+      margin:0 0 4px 0;
+      font-size: 14px;
+    }
+    .itemSub{
+      margin:0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .itemDel{
+      pointer-events:auto;
+      border: 1px solid rgba(0,0,0,.14);
+      background: rgba(255,255,255,.86);
+      border-radius: 12px;
+      padding: 8px 10px;
+      cursor:pointer;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .itemDel:hover{ transform: translateY(-1px); }
+    .itemDel:active{ transform: translateY(0px); }
+
+    .empty{
+      border: 1px dashed rgba(0,0,0,.16);
+      background: rgba(255,255,255,.62);
+      border-radius: 16px;
+      padding: 14px;
+      color: rgba(23,48,38,.80);
+      font-size: 13px;
+    }
+
+    /* ===== V2 panel (home only) ===== */
+    .v2Box{
+      height: var(--h-v2);
+    }
+    .v2Content{
+      padding: var(--v2-inset);
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+      pointer-events:auto;
+    }
+    .v2Row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      border: 1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.78);
+      border-radius: 16px;
+      padding: 12px;
+      backdrop-filter: blur(6px);
+    }
+    .v2Left{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width:0;
+    }
+    .v2Badge{
+      width: 32px;
+      height: 32px;
+      border-radius: 14px;
+      display:grid;
+      place-items:center;
+      border: 1px solid rgba(83,170,132,.35);
+      background: rgba(232,255,245,.85);
+      flex: 0 0 auto;
+      font-weight: 900;
+    }
+    .v2Text{ min-width:0; }
+    .v2Text .t{
+      margin:0;
+      font-weight: 900;
+      font-size: 14px;
+      line-height:1.15;
+    }
+    .v2Text .s{
+      margin:2px 0 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height:1.2;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .v2Open{
+      pointer-events:auto;
+      border: 1px solid rgba(0,0,0,.12);
+      background: rgba(255,255,255,.90);
+      border-radius: 12px;
+      padding: 8px 12px;
+      cursor:pointer;
+      font-weight: 800;
+      white-space:nowrap;
+    }
+
+    /* ===== Bottom nav ===== */
+    .bottomNav{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: var(--nav-bottom);
+      width: min(var(--stage-max), calc(100vw - var(--stage-pad2)));
+      display:flex;
+      justify-content:space-between;
+      gap: 12px;
+      pointer-events:auto;
+      z-index: 50;
+    }
+    @media (max-width: 980px){
+      .bottomNav{ justify-content:center; flex-wrap:wrap; }
+    }
+    .tab{
+      position: relative;
+      width: var(--tab-w);
+      height: var(--tab-h);
+      border: none;
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+      filter: drop-shadow(0 10px 16px rgba(0,0,0,.08));
+    }
+    .tab img{
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display:block;
+    }
+    .tab span{
+      position:absolute;
+      inset: 0;
+      display:grid;
+      place-items:center;
+      font-weight: 900;
+      font-size: 13px;
+      transform: translateY(1px);
+      pointer-events:none;
+      color: rgba(23,48,38,.92);
+      text-shadow: 0 1px 0 rgba(255,255,255,.6);
+    }
+    .tab[aria-current="page"]{
+      transform: translateY(-1px);
+    }
+
+    /* ===== Modal ===== */
+    .overlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.36);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      z-index: 100;
+    }
+    .overlay.open{ display:flex; }
+    .modal{
+      width: min(560px, 100%);
+      border-radius: 18px;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.12);
+      box-shadow: 0 24px 60px rgba(0,0,0,.22);
+      padding: 16px;
+    }
+    .modal h3{ margin: 0 0 10px 0; font-size: 16px; }
+    .field{ display:flex; flex-direction:column; gap:6px; margin: 10px 0 14px; }
+    .field label{ font-size: 12px; color: var(--muted); }
+    .field input{
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,.14);
+      padding: 0 12px;
+      outline: none;
+      background: rgba(255,255,255,.9);
+    }
+    .modalActions{ display:flex; justify-content:flex-end; gap: 10px; }
+    .btn.secondary{ background: rgba(255,255,255,.72); }
+  </style>
+</head>
+<body>
+  <header class="stage">
+    <div class="topbar" aria-label="topbar">
+      <img src="/ui/page_1.png" alt="" />
+      <div class="content">
+        <div class="brand" aria-label="brand">
+          <div class="logo" aria-hidden="true">F</div>
+          <div class="brandText">
+            <div class="t">FridgeOps</div>
+            <div class="s">v1・Fridge UI + Items CRUD</div>
+          </div>
+        </div>
+        <div class="headerBtnWrap">
+          <button class="btn" id="openSettings" type="button">API 設定</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div id="view"></div>
+  </main>
+
+  <nav class="bottomNav" aria-label="bottom navigation">
+    <button class="tab" data-route="home" aria-current="page" type="button">
+      <img src="/ui/flame_3-1.png" alt="" />
+      <span>ホーム</span>
+    </button>
+    <button class="tab" data-route="add" type="button">
+      <img src="/ui/flame_3-2.png" alt="" />
+      <span>食材を追加</span>
+    </button>
+    <button class="tab" data-route="inventory" type="button">
+      <img src="/ui/flame_3-3.png" alt="" />
+      <span>在庫一覧</span>
+    </button>
+    <button class="tab" data-route="v2" type="button">
+      <img src="/ui/flame_3-4.png" alt="" />
+      <span>レシピ提案(v2)</span>
+    </button>
+  </nav>
+
+  <div class="overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal">
+      <h3>API 設定</h3>
+      <div class="field">
+        <label for="apiBase">API Base URL（例：https://xxxx.execute-api.ap-northeast-1.amazonaws.com）</label>
+        <input id="apiBase" placeholder="未設定でも動作します（ローカル保存）" />
+      </div>
+      <div class="modalActions">
+        <button class="btn secondary" id="closeModal" type="button">閉じる</button>
+        <button class="btn" id="saveApi" type="button">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    'use strict';
+
+    const state = {
+      route: 'home',
+      apiBase: localStorage.getItem('fridgeops_api_base') || '',
+      items: loadLocalItems(),      // ローカル保存用
+      cache: null,                  // 表示用（直近 fetch のキャッシュ）
+    };
+
+    function todayISO(){
+      return new Date().toISOString().slice(0,10);
+    }
+
+    function loadLocalItems(){
+      try{
+        const raw = localStorage.getItem('fridgeops_items');
+        return raw ? JSON.parse(raw) : [];
+      }catch(_){
+        return [];
+      }
+    }
+
+    function saveLocalItems(items){
+      localStorage.setItem('fridgeops_items', JSON.stringify(items));
+    }
+
+    function esc(s){
+      return String(s)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#39;");
+    }
+
+    function qs(sel, root=document){ return root.querySelector(sel); }
+    function qsa(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
+
+    function setRoute(next){
+      state.route = next;
+      render();
+    }
+
+    function setActiveTab(){
+      qsa('.tab').forEach(btn => {
+        const isActive = btn.dataset.route === state.route;
+        if(isActive){
+          btn.setAttribute('aria-current','page');
+        }else{
+          btn.removeAttribute('aria-current');
+        }
+      });
+    }
+
+    function alertV2(){
+      alert('v2 はまだ未実装です。');
+    }
+
+    function openModal(){
+      const overlay = qs('#modalOverlay');
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden','false');
+      qs('#apiBase').value = state.apiBase;
+      qs('#apiBase').focus();
+    }
+    function closeModal(){
+      const overlay = qs('#modalOverlay');
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden','true');
+    }
+
+    async function fetchItems(){
+      // API 未設定 → ローカル
+      if(!state.apiBase){
+        state.cache = state.items;
+        return state.items;
+      }
+
+      // API 設定あり → GET
+      try{
+        const res = await fetch(state.apiBase.replace(/\/$/,'') + '/items', { method:'GET' });
+        if(!res.ok) throw new Error('bad response');
+        const data = await res.json();
+
+        let items = [];
+        if(Array.isArray(data)) items = data;
+        else if(Array.isArray(data.items)) items = data.items;
+
+        state.cache = items;
+        return items;
+      }catch(_){
+        // 失敗時はローカルにフォールバック
+        state.cache = state.items;
+        return state.items;
+      }
+    }
+
+    async function addItem(name, purchasedAt){
+      const item = {
+        id: crypto.randomUUID(),
+        name,
+        purchasedAt: purchasedAt || todayISO(),
+      };
+
+      // API があるなら POST。無ければローカル保存。
+      if(state.apiBase){
+        try{
+          const res = await fetch(state.apiBase.replace(/\/$/,'') + '/items', {
+            method:'POST',
+            headers:{ 'content-type':'application/json' },
+            body: JSON.stringify(item),
+          });
+          if(!res.ok) throw new Error('bad response');
+          return;
+        }catch(_){
+          // fall back to local
+          state.items.unshift(item);
+          saveLocalItems(state.items);
+          return;
+        }
+      }
+
+      state.items.unshift(item);
+      saveLocalItems(state.items);
+    }
+
+    async function deleteItem(id){
+      if(!id) return;
+
+      // API があるなら DELETE を試す（一般的な /items/{id} 形式）
+      if(state.apiBase){
+        try{
+          const url = state.apiBase.replace(/\/$/,'') + '/items/' + encodeURIComponent(id);
+          const res = await fetch(url, { method:'DELETE' });
+          if(!res.ok) throw new Error('bad response');
+          return true;
+        }catch(_){
+          // API 失敗時：ローカルにも同じ ID があれば消す（デモ用フォールバック）
+          const before = state.items.length;
+          state.items = state.items.filter(it => it && it.id !== id);
+          if(state.items.length !== before) saveLocalItems(state.items);
+          alert('API 側の削除に失敗しました。API の設定やエンドポイントを確認してください。');
+          return false;
+        }
+      }
+
+      // ローカル削除
+      state.items = state.items.filter(it => it && it.id !== id);
+      saveLocalItems(state.items);
+      return true;
+    }
+
+    function render(){
+      setActiveTab();
+      const view = qs('#view');
+      if(!view) return;
+
+      if(state.route === 'home'){
+        renderHome(view);
+      }else if(state.route === 'add'){
+        renderAdd(view);
+      }else if(state.route === 'inventory'){
+        renderInventory(view);
+      }else{
+        // v2 route は UI では使わない（タブクリックで alert）
+        state.route = 'home';
+        renderHome(view);
+      }
+    }
+
+    async function renderHome(root){
+      const items = await fetchItems();
+      const count = items.length;
+
+      root.innerHTML = `
+        <div class="grid">
+          <section>
+            <div class="sectionHead">
+              <h2>ホーム</h2>
+              <p>冷蔵庫の中身を表示します。追加は「食材を追加」へ。</p>
+            </div>
+
+            <div class="uiBox fridgeBox" aria-label="home-fridge">
+              <img src="/ui/home_fridge_2.png" alt="" />
+              <div class="uiContent">
+                <div class="fridgeToolbar">
+                  <div class="fridgeTitle">
+                    <div style="font-weight:900;">冷蔵庫</div>
+                    <span class="pill">${count} 件</span>
+                  </div>
+                  <button class="addBtn" id="homeAddBtn" type="button">＋ 追加</button>
+                </div>
+
+                <div class="fridgePane" aria-label="items-pane">
+                  ${count === 0 ? `<div class="empty">まだ食材がありません。右上の「＋ 追加」から登録できます。</div>` : ''}
+                  ${items.map(it => {
+                    const id = it && it.id ? String(it.id) : '';
+                    const name = esc(it && it.name != null ? it.name : '（no name）');
+                    const purchasedAt = esc(it && it.purchasedAt != null ? it.purchasedAt : '');
+                    const delBtn = id ? `<button class="itemDel" data-id="${esc(id)}" type="button">削除</button>` : '';
+                    return `
+                      <div class="itemCard">
+                        <div class="itemIcon">▢</div>
+                        <div class="itemMeta">
+                          <p class="itemName">${name}</p>
+                          <p class="itemSub">購入日: ${purchasedAt}</p>
+                        </div>
+                        ${delBtn}
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <div class="sectionHead">
+              <h2>v2 予定</h2>
+              <p>UI は先に置く（クリックで「未実装」表示）。</p>
+            </div>
+
+            <div class="uiBox v2Box" aria-label="v2-panel">
+              <img src="/ui/v2vision_4.png" alt="" />
+              <div class="uiContent v2Content">
+                <div class="v2Row">
+                  <div class="v2Left">
+                    <div class="v2Badge">★</div>
+                    <div class="v2Text">
+                      <p class="t">レシピ提案</p>
+                      <p class="s">残り食材から提案（v2）</p>
+                    </div>
+                  </div>
+                  <button class="v2Open" type="button">開く</button>
+                </div>
+
+                <div class="v2Row">
+                  <div class="v2Left">
+                    <div class="v2Badge">¥</div>
+                    <div class="v2Text">
+                      <p class="t">コスト制限</p>
+                      <p class="s">API 使用量 / 予算ガード（v2）</p>
+                    </div>
+                  </div>
+                  <button class="v2Open" type="button">開く</button>
+                </div>
+
+                <div class="v2Row">
+                  <div class="v2Left">
+                    <div class="v2Badge">🔒</div>
+                    <div class="v2Text">
+                      <p class="t">サインイン</p>
+                      <p class="s">Cognito / JWT（v2）</p>
+                    </div>
+                  </div>
+                  <button class="v2Open" type="button">開く</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      `;
+
+      // events
+      qs('#homeAddBtn', root).addEventListener('click', () => setRoute('add'));
+      qsa('.v2Open', root).forEach(btn => btn.addEventListener('click', alertV2));
+
+      qsa('.itemDel', root).forEach(btn => btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        if(!id) return;
+        const ok = confirm('この食材を削除しますか？');
+        if(!ok) return;
+        await deleteItem(id);
+        render(); // 再描画（API の場合は再 fetch）
+      }));
+    }
+
+    function renderAdd(root){
+      root.innerHTML = `
+        <div class="grid oneCol">
+          <section>
+            <div class="sectionHead">
+              <h2>食材を追加</h2>
+              <p>食材名と購入日を入力して追加します（API 未設定ならローカル保存）。</p>
+            </div>
+
+            <div class="uiBox fridgeBox">
+              <img src="/ui/home_fridge_2.png" alt="" />
+              <div class="uiContent" style="padding: 22px; pointer-events:auto;">
+                <div style="max-width: 520px; background: rgba(255,255,255,.66); border:1px solid rgba(0,0,0,.10); border-radius: 18px; padding: 14px;">
+                  <div class="field" style="margin:0 0 12px;">
+                    <label for="newName">食材名</label>
+                    <input id="newName" placeholder="例：ねぎ" />
+                  </div>
+
+                  <div class="field" style="margin:0 0 12px;">
+                    <label for="newPurchasedAt">購入日</label>
+                    <input id="newPurchasedAt" type="date" />
+                  </div>
+
+                  <div style="display:flex; gap:10px; justify-content:flex-end;">
+                    <button class="btn secondary" id="cancelAdd" type="button">戻る</button>
+                    <button class="btn" id="doAdd" type="button">追加</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      `;
+
+      qs('#newPurchasedAt', root).value = todayISO();
+
+      qs('#cancelAdd', root).addEventListener('click', () => setRoute('home'));
+      qs('#doAdd', root).addEventListener('click', async () => {
+        const name = qs('#newName', root).value.trim();
+        const purchasedAt = qs('#newPurchasedAt', root).value.trim();
+        if(!name) return;
+        await addItem(name, purchasedAt || todayISO());
+        setRoute('home');
+      });
+    }
+
+    async function renderInventory(root){
+      const items = await fetchItems();
+
+      root.innerHTML = `
+        <div class="grid oneCol">
+          <section>
+            <div class="sectionHead">
+              <h2>在庫一覧</h2>
+              <p>現在の登録食材をまとめて表示します（削除も可能）。</p>
+            </div>
+
+            <div class="uiBox fridgeBox">
+              <img src="/ui/home_fridge_2.png" alt="" />
+              <div class="uiContent" style="padding: 22px; pointer-events:auto;">
+                <div style="width:min(760px, 100%); background: rgba(255,255,255,.58); border:1px solid rgba(0,0,0,.10); border-radius: 18px; padding: 14px; max-height: calc(var(--h-fridge) - 44px); overflow:auto;">
+                  ${items.length === 0 ? `<div class="empty">まだ食材がありません。</div>` : ''}
+                  ${items.map(it => {
+                    const id = it && it.id ? String(it.id) : '';
+                    const name = esc(it && it.name != null ? it.name : '（no name）');
+                    const purchasedAt = esc(it && it.purchasedAt != null ? it.purchasedAt : '');
+                    const delBtn = id ? `<button class="itemDel" data-id="${esc(id)}" type="button">削除</button>` : '';
+                    return `
+                      <div class="itemCard">
+                        <div class="itemIcon">▢</div>
+                        <div class="itemMeta">
+                          <p class="itemName">${name}</p>
+                          <p class="itemSub">購入日: ${purchasedAt}</p>
+                        </div>
+                        ${delBtn}
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      `;
+
+      qsa('.itemDel', root).forEach(btn => btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        if(!id) return;
+        const ok = confirm('この食材を削除しますか？');
+        if(!ok) return;
+        await deleteItem(id);
+        render();
+      }));
+    }
+
+    // Init bindings
+    qsa('.tab').forEach(btn => btn.addEventListener('click', () => {
+      const route = btn.dataset.route;
+
+      // v2 タブは未実装：移動せずアラートのみ
+      if(route === 'v2'){
+        alertV2();
+        return;
+      }
+
+      setRoute(route);
+    }));
+
+    qs('#openSettings').addEventListener('click', openModal);
+    qs('#closeModal').addEventListener('click', closeModal);
+
+    qs('#saveApi').addEventListener('click', () => {
+      state.apiBase = qs('#apiBase').value.trim();
+      localStorage.setItem('fridgeops_api_base', state.apiBase);
+      closeModal();
+      render();
+    });
+
+    qs('#modalOverlay').addEventListener('click', (e) => {
+      if(e.target && e.target.id === 'modalOverlay') closeModal();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape') closeModal();
+    });
+
+    render();
+  </script>
+</body>
+</html>

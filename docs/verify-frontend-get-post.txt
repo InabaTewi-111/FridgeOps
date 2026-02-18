@@ -1,0 +1,7 @@
+api_base_url=https://os4mggbvz9.execute-api.ap-northeast-1.amazonaws.com
+
+[GET] /items
+{"items": [{"id": "9b059179-9b22-4023-8431-3e237b19e3c5", "name": "milk", "createdAt": 1770949706}], "count": 1}
+
+[POST] /items (name=milk)
+{"id": "1398a4ed-5539-4c0a-bc22-65a836ae00c1"}
